@@ -22,7 +22,7 @@ The point of this first session is to introduce the tools that we will use to ma
 Generally speaking, we will deal with either \texttt{R}, bash scripting or \href{https://wiki.galaxyproject.org/PublicGalaxyServers}{Galaxy}.
 
 
-\texttt{R} is not usually the preferred way to deal with NGS data.
+\texttt{R} is not usually the preferred way to deal with HTS data.
 One reason for this is that the general approach of \texttt{R} is to load data into the RAM as a first instance, which is not practical when the datasets are very large.
 Shell scripts (aka command line tools) that read the data on a line per line basis are usually preferred.
 Nevertheless, \texttt{R} has developed tools to overcome these limitations and there is, in fact, surprisingly much that one can do with it.
@@ -38,6 +38,52 @@ So we will use \texttt{R} mostly to play with the data and show the sort of thin
 
 
 \subsection{Basic shell scripting to read NGS files}
+
+
+Many of the standard HTS formats are simple text files, with tightly defined specifications to allow effective parsing.
+Some of these files can be compressed and/or indexed to enable quicker access.
+The first esstential step is to be confortable with reading/compressing/uncompressing various text files.
+
+<<head, engine='bash'>>=
+head ../../data/fastq_files/fastq1_1.txt
+@ 
+
+
+<<tail, engine='bash'>>=
+tail ../../data/fastq_files/fastq1_1.txt
+@ 
+
+If you need more information, shell scripts have useful manual page that can be accessed using the \texttt{man} command.
+<<man, engine='bash', eval=FALSE>>=
+man head
+man tail
+@ 
+
+One can parse a text file using a variety of commands, and it is useful to become familiar with the following:
+<<reads, engine='bash', eval = FALSE>>=
+cat ../../data/fastq_files/fastq1_1.txt
+less ../../data/fastq_files/fastq1_1.txt
+more ../../data/fastq_files/fastq1_1.txt
+less -S ../../data/fastq_files/fastq1_1.txt
+@ 
+
+\noindent
+{\bf Exercise:} Can you see the differences between these various ways of reading a file?
+
+\vspace{1.5cm}
+
+
+A routine that is often useful is \texttt{wc} that counts the words/character/lines of a file. Try:
+<<wc, engine='bash', eval= FALSE>>=
+wc  ../../data/fastq_files/fastq1_1.txt
+wc  -l ../../data/fastq_files/fastq1_1.txt
+@
+
+
+\noindent
+{\bf Exercise:} Using the man page, find a way to print the first 20 lines of a fastq file (and what about the last 20 lines)?\\
+{\bf Exercise:} Based on the \texttt{wc} output, how many reads do these fastq files contain?
+
 
 
 \subsection{Using the shortRead package in R}
@@ -71,6 +117,14 @@ head(as.character(ids))
 @ 
 
 
+\subsection{Using the Galaxy server}
+
+Start by identifying a working instance of the Galaxy server from this \href{https://wiki.galaxyproject.org/PublicGalaxyServers}{location}.
+There are multiple choices here, so feel free to experiment.
+In case of doubt, I used the following server: \href{http://biominavm-galaxy.biomina.be/galaxy/}{http://biominavm-galaxy.biomina.be/galaxy/}.
+
+\noindent
+{\bf Exercise:} Create an account on one of these Galaxy servers and upload the pair of fastq {\it fastq2\_1.txt} and {\it fastq2\_2.txt}.
 
 
 
@@ -78,8 +132,6 @@ head(as.character(ids))
 \newpage
 
 \section{Reading and interpreting quality scores}
-
-
 
 
 Of particular interest to us are the quality scores and we can keep using R to see what they look like:
@@ -99,17 +151,7 @@ encoding(quality(fastq2.1))
 @ 
 
 
-\subsection{Using the Galaxy server}
 
-Start by identifying a working instance of the Galaxy server from this \href{https://wiki.galaxyproject.org/PublicGalaxyServers}{location}.
-There are multiple choices here, so feel free to experiment.
-In case of doubt, I used the following server: \href{http://biominavm-galaxy.biomina.be/galaxy/}{http://biominavm-galaxy.biomina.be/galaxy/}.
-
-\noindent
-{\bf Exercise:} Create an account on one of these Galaxy servers and upload the pair of fastq {\it fastq2\_1.txt} and {\it fastq2\_2.txt}.
-
-
-\subsection{Basic shell scripting to parse fastq files}
 
 
 
@@ -117,6 +159,16 @@ In case of doubt, I used the following server: \href{http://biominavm-galaxy.bio
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \clearpage
 \section{Merging overlapping with paired reads}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\section{Reading BAM files}
+
+\subsection{Using shell scripts}
+
+\subsection{Using R}
+
 
 
 
