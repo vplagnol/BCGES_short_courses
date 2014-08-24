@@ -19,5 +19,29 @@ if (!forStudents) show <- 'markup' else show <- 'hide'
 
 
 
+%%%%%%%%%%%%%%%%%%%%%%
+\section{Read depth analysis to detect CNVs}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%
+\section{Use Rsamtools to identify reads characteristic of a deletion}
+
+<<get.odd.reads>>=
+library(Rsamtools)
+library(GenomicRanges)
+
+which <- GRanges(seqnames=Rle('20'),
+                 IRanges(start = 2854142, end = 3019315))
+
+what <- c("rname", "strand", "pos", "qwidth", "seq")
+param <- ScanBamParam(which=which, what=what)
+
+bam <- scanBam(file = 'GBR_1KG_exomes/HG00096.mapped.ILLUMINA.bwa.GBR.exome.20120522.bam', param=param)
+@ 
+
+
+
+
 
 \end{document}
