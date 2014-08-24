@@ -1,0 +1,23 @@
+\documentclass[a4paper]{article}
+\usepackage{hyperref,fullpage}
+
+\title{BCGES short courses, session 1 \newline RNA-Seq}
+\date{}
+\author{}
+
+\begin{document}
+%\SweaveOpts{concordance=TRUE}
+%knit('practical.Rnw'); system('pdflatex practical')
+
+\maketitle
+
+
+<<setup, results = 'hide', echo = FALSE>>=
+forStudents <- TRUE
+if (!forStudents) show <- 'markup' else show <- 'hide'
+@
+
+
+
+
+\end{document}
