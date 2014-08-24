@@ -1,0 +1,84 @@
+\documentclass[a4paper]{article}
+\usepackage{hyperref,fullpage}
+
+\title{BCGES short courses, session 1 \newline Multi-sample calling and variant annotation}
+\date{}
+\author{}
+
+\begin{document}
+%\SweaveOpts{concordance=TRUE}
+%knit('practical.Rnw'); system('pdflatex practical')
+
+\maketitle
+
+
+<<setup, results = 'hide', echo = FALSE>>=
+forStudents <- TRUE
+if (!forStudents) show <- 'markup' else show <- 'hide'
+@
+
+Multi-sample calling has several advantages:
+\begin{itemize}
+\item Borrow information from well covered samples to identify indels and other small variants, in turn improving the calling for other samples.
+\item Uniform calls across samples, which improves sample comparability.
+\item Computational improvements associated with the joint management of potentially large collection of samples.
+\end{itemize}
+
+Both \texttt{GATK} and \texttt{samtools} provide options for multi-sample calling and we will explore how these scripts are setup today.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Multi-sample calling using samtools}
+
+\texttt{samtools} is less feature-rich that \texttt{GATK} but it remains a dependable, solid piece of software that can provide very reliable callsets.
+It has been used for large scale projects like UK10K, and there is no reason to doubt the quality of these calls.
+Calling samples requires the presence of the reference sequence, in fasta format.
+The compressed file \texttt{chr21.fasta} is available on the github site to make it easy.
+It is however necessary to uncompress this file using \texttt{gunzip}.
+
+Once this is done, the script \texttt{multi_sample_calling_samtools.sh} describes the steps that generate a VCF file using \texttt{samtools}.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Multi-sample calling using the GATK Unified Genotyper}
+
+
+\subsection{Installing the reference fasta file}
+
+As far as I can tell, and unlike \texttt{samtools}, \texttt{GATK} requires that the fasta file matches the sequence dictionary as specified in the header of the BAM file.
+
+Hence a required element for variant calling with human data is the reference sequence in fasta format.
+It is also necessary to index this sequence in order to provide a ``dictionary'' of what sequences are present, and how long they are.
+This file is large and is therefore not on the \texttt{github} of the class.
+It can be downloaded using a \texttt{ftp} site and the \texttt{wget} utility
+
+<<wget.fastq, eval = FALSE>>=
+wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.gz
+gunzip human_g1k_v37.fasta.gz
+samtools faidx human_g1k_v37.fasta
+@
+
+These three steps download the compressed reference, unzip it and generate an index for that file.
+
+
+\subsection{Actual variant calling}
+The Unified Genotyper version of the GATK pipeline is implemented in the script called \texttt{multi\_sample\_calling\_GATK\_UG.sh}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{GATK v3.0 HaplotypeCaller version of multi-sample calling}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Variant annotation using the Variant Effect Predictor (VEP)}
+
+
+
+
+
+
+\end{document}
