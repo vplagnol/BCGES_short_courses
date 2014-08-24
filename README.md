@@ -4,18 +4,18 @@ BCGES_short_courses
 Sequence data analysis short courses, slides and practicals
 
 
-Monday September 8, PM: VP, Introduction session, fastq and BAM format, basic data parsing using R, command line scripting and Galaxy server.
+Session 1, Monday September 8, PM: VP, Introduction session, fastq and BAM format, basic data parsing using R, command line scripting and Galaxy server.
 
-Tuesday AM: TC, Sequence mapping and visualization
+Session 2, Tuesday AM: TC, Sequence mapping and visualization
 
-Tuesday PM: TC, Variant detection and calling
+Session 3, Tuesday PM: TC, Variant detection and calling
 
-Wednesday AM: VP, Multi-sample calling, variant annotation (Variant effect Predictor, ANNOVAR)
+Session 4, Wednesday AM: VP, Multi-sample calling, variant annotation (Variant effect Predictor, ANNOVAR)
 
-Wednesday PM: VP, Rsamtools, CNV calling using read depth analysis, split reads
+Session 5, Wednesday PM: VP, Rsamtools, CNV calling using read depth analysis, split reads
 
-Thursday AM: TC, De novo assembly
+Session 6, Thursday AM: TC, De novo assembly
 
-Thursday PM: VP, RNA-Seq differential expression analysis
+Session 7, Thursday PM: VP, RNA-Seq differential expression analysis
 
-Friday AM:  TC, Population genetics, application, summary
+Session 8, Friday AM:  TC, Population genetics, application, summary
