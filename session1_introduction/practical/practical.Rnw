@@ -18,7 +18,7 @@ if (!forStudents) show <- 'markup' else show <- 'hide'
 @
 
 
-The point of this first session is to introduce the tools that we will use to manipulate sequence data.
+The aim of this first session is to introduce the tools that we will use to manipulate sequence data.
 Generally speaking, we will deal with either \texttt{R}, bash scripting or \href{https://wiki.galaxyproject.org/PublicGalaxyServers}{Galaxy}.
 
 
@@ -153,7 +153,7 @@ encoding(quality(fastq2.1))
 @ 
 
 \noindent
-{\bf Exercise (somewhat difficult):} Compute the average Phred quality score at position 20 of the sequencing reads.
+{\bf Exercise (somewhat difficult):} Generate a plot showing the average Phred score as a function of the position in the read.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -171,6 +171,9 @@ It allows very quick retrieval of reads that map to a given genomic location, wh
 \subsection{Using shell scripts}
 
 \texttt{samtools} is the key piece of software that is used to read, write and index BAM files.
+The \href{http://samtools.sourceforge.net/samtools.shtml}{manual page} is the first place to go to find information about how to use \texttt{samtools}.
+
+
 
 
 \subsection{Using R}
