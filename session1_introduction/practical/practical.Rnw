@@ -1,0 +1,132 @@
+\documentclass[a4paper]{article}
+\usepackage{hyperref,fullpage}
+
+\title{BCGES short courses, session 1 \newline Introduction}
+\date{}
+\author{}
+
+\begin{document}
+%\SweaveOpts{concordance=TRUE}
+%knit('practical.Rnw'); system('pdflatex practical')
+
+\maketitle
+
+
+<<setup, results = 'hide', echo = FALSE>>=
+forStudents <- TRUE
+if (!forStudents) show <- 'markup' else show <- 'hide'
+@
+
+
+The point of this first session is to introduce the tools that we will use to manipulate sequence data.
+Generally speaking, we will deal with either \texttt{R}, bash scripting or \href{https://wiki.galaxyproject.org/PublicGalaxyServers}{Galaxy}.
+
+
+\texttt{R} is not usually the preferred way to deal with NGS data.
+One reason for this is that the general approach of \texttt{R} is to load data into the RAM as a first instance, which is not practical when the datasets are very large.
+Shell scripts (aka command line tools) that read the data on a line per line basis are usually preferred.
+Nevertheless, \texttt{R} has developed tools to overcome these limitations and there is, in fact, surprisingly much that one can do with it.
+It is also a practical tools for teaching purposes, which is useful in the context of these short courses.
+So we will use \texttt{R} mostly to play with the data and show the sort of things one may want to do with it.
+
+\tableofcontents
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\section{Basic fastq reading and quality control}
+
+
+\subsection{Basic shell scripting to read NGS files}
+
+
+\subsection{Using the shortRead package in R}
+We start by loading one of the most relevant library, called ``ShortReads''. This package may not be installed but it can easily done so by running:
+<<install, eval = FALSE>>=
+source("http://bioconductor.org/biocLite.R")
+biocLite("ShortRead")
+@ 
+
+<<load>>=
+library('ShortRead')
+@ 
+
+As a starting point it is possible to read some of the examples fastq files and create relevant \texttt{R} objects.
+<<readFastq, eval=TRUE>>=
+fastq1.1 <- readFastq('../../data/fastq_files/fastq1_1.txt')
+fastq1.2 <- readFastq('../../data/fastq_files/fastq1_2.txt')
+@ 
+
+We can now display the sequences and the qualities. Note that specific classes have been defined to store each of these objects.
+Much work has gone into figuring out how to do this.
+
+<<showFastq>>=
+reads <- sread(fastq1.1)
+class(reads)
+head(as.character(reads))
+
+ids <- id(fastq1.1)
+class(ids)
+head(as.character(ids))
+@ 
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+
+\section{Reading and interpreting quality scores}
+
+
+
+
+Of particular interest to us are the quality scores and we can keep using R to see what they look like:
+<<showQuals>>=
+quals <- quality(fastq1.1)
+class(quals)
+quals
+@ 
+
+
+The \texttt{ShortRead} package will attempt to guess what these quality scores mean, for example see:
+<<guessQual>>=
+encoding(quality(fastq1.1))
+
+fastq2.1 <- readFastq('../../data/fastq_files/fastq2_1.txt')
+encoding(quality(fastq2.1))
+@ 
+
+
+\subsection{Using the Galaxy server}
+
+Start by identifying a working instance of the Galaxy server from this \href{https://wiki.galaxyproject.org/PublicGalaxyServers}{location}.
+There are multiple choices here, so feel free to experiment.
+In case of doubt, I used the following server: \href{http://biominavm-galaxy.biomina.be/galaxy/}{http://biominavm-galaxy.biomina.be/galaxy/}.
+
+\noindent
+{\bf Exercise:} Create an account on one of these Galaxy servers and upload the pair of fastq {\it fastq2\_1.txt} and {\it fastq2\_2.txt}.
+
+
+\subsection{Basic shell scripting to parse fastq files}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\section{Merging overlapping with paired reads}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\section{Session info}
+<<sessionInfo>>=
+sessionInfo()
+@ 
+
+
+\end{document}
