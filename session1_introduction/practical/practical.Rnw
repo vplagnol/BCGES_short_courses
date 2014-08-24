@@ -133,8 +133,10 @@ In case of doubt, I used the following server: \href{http://biominavm-galaxy.bio
 
 \section{Reading and interpreting quality scores}
 
+The quality scores can be read directly at the command line level, using commands like \texttt{head} or \texttt{tail}.
+But it is also possible and even practical to use R to do this.
+For example, following up on the example above:
 
-Of particular interest to us are the quality scores and we can keep using R to see what they look like:
 <<showQuals>>=
 quals <- quality(fastq1.1)
 class(quals)
@@ -150,10 +152,8 @@ fastq2.1 <- readFastq('../../data/fastq_files/fastq2_1.txt')
 encoding(quality(fastq2.1))
 @ 
 
-
-
-
-
+\noindent
+{\bf Exercise (somewhat difficult):} Compute the average Phred quality score at position 20 of the sequencing reads.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -164,8 +164,14 @@ encoding(quality(fastq2.1))
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \clearpage
 \section{Reading BAM files}
+BAM files are compressed files that contain the information from the FASTQ files, plus additional information about the location where the reads map.
+A key feature of the BAM files is that they can be indexed, i.e. an associated file contains information about where each of the reads are located in the file.
+It allows very quick retrieval of reads that map to a given genomic location, which is the typical way one wants to use BAM files (for example, to extract all the reads that map to a gene of interest in order to find rare variants).
 
 \subsection{Using shell scripts}
+
+\texttt{samtools} is the key piece of software that is used to read, write and index BAM files.
+
 
 \subsection{Using R}
 
