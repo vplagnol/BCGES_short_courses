@@ -2,9 +2,9 @@
 \usepackage[colorlinks=true]{hyperref}
 \usepackage{fullpage}
 
-\title{BCGES short courses, session 1 \newline Introduction}
+\title{BCGES short courses, session 1: Introduction, file formats, shell scripting, Galaxy}
 \date{}
-\author{}
+\author{Vincent Plagnol}
 
 \begin{document}
 %\SweaveOpts{concordance=TRUE}
@@ -12,10 +12,9 @@
 
 \maketitle
 
-
 <<setup, results = 'hide', echo = FALSE>>=
-forStudents <- TRUE
-if (!forStudents) show <- 'markup' else show <- 'hide'
+if (!exists('forStudents')) forStudents <- TRUE  ##default is to print the student version
+if (!forStudents) {echo <- TRUE; results <- 'markup'} else {results <- 'hide'; echo  <- FALSE;}
 @
 
 

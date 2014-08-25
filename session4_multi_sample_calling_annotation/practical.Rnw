@@ -1,7 +1,7 @@
 \documentclass[a4paper]{article}
 \usepackage{hyperref,fullpage}
 
-\title{BCGES short courses, session 1 \newline Multi-sample calling and variant annotation}
+\title{BCGES short courses, session 4: Multi-sample calling and variant annotation}
 \date{}
 \author{}
 
@@ -13,8 +13,8 @@
 
 
 <<setup, results = 'hide', echo = FALSE>>=
-forStudents <- TRUE
-if (!forStudents) show <- 'markup' else show <- 'hide'
+if (!exists('forStudents')) forStudents <- TRUE  ##default is to print the student version
+if (!forStudents) {echo <- TRUE; results <- 'markup'} else {results <- 'hide'; echo  <- FALSE;}
 @
 
 Multi-sample calling has several advantages:

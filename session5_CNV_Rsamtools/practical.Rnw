@@ -1,7 +1,7 @@
 \documentclass[a4paper]{article}
 \usepackage{hyperref,fullpage}
 
-\title{BCGES short courses, session 1 \newline Picard tools, CNV analysis}
+\title{BCGES short courses, session 5: Picard tools, CNV analysis}
 \date{}
 \author{Vincent Plagnol}
 
