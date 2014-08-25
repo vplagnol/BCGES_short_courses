@@ -27,6 +27,11 @@ if (!forStudents) show <- 'markup' else show <- 'hide'
 %%%%%%%%%%%%%%%%%%%%%%
 \section{Use Rsamtools to identify reads characteristic of a deletion}
 
+Another strategy to detect CNVs consists of picking up reads that show an unusual pattern.
+For example, two pairs further apart than they normally should is potentially flagging a deletion.
+
+
+
 <<get.odd.reads>>=
 library(Rsamtools)
 library(GenomicRanges)
@@ -37,7 +42,7 @@ which <- GRanges(seqnames=Rle('20'),
 what <- c("rname", "strand", "pos", "qwidth", "seq")
 param <- ScanBamParam(which=which, what=what)
 
-bam <- scanBam(file = 'GBR_1KG_exomes/HG00096.mapped.ILLUMINA.bwa.GBR.exome.20120522.bam', param=param)
+bam <- scanBam(file = '../data/BAM_files/HG00096.mapped.ILLUMINA.bwa.GBR.exome.20120522.bam', param=param)
 @ 
 
 
