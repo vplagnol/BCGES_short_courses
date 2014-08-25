@@ -18,32 +18,56 @@ if (!forStudents) show <- 'markup' else show <- 'hide'
 @
 
 
+\section{\texttt{samtools} over the web to download BAM files}
+
+
+To do that download the list of whole genome alignments from the 1,000 genomes.
+<<wget, eval = FALSE, engine = 'bash'>>=
+wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/alignment.index
+@ 
+
 
 %%%%%%%%%%%%%%%%%%%%%%
 \section{Read depth analysis to detect CNVs}
-
-
+<<exomeDepth>>=
+library(ExomeDepth)
+@
 
 %%%%%%%%%%%%%%%%%%%%%%
 \section{Use Rsamtools to identify reads characteristic of a deletion}
 
 Another strategy to detect CNVs consists of picking up reads that show an unusual pattern.
 For example, two pairs further apart than they normally should is potentially flagging a deletion.
+In this exercice I proposed to look at a well described 20 kb CNV located near the {\it IRGM} gene.
+We can start by looking at the location of the variant using the data from the Conrad et al paper, which are loaded into ExomeDepth.
 
-
-
-<<get.odd.reads>>=
-library(Rsamtools)
-library(GenomicRanges)
-
-which <- GRanges(seqnames=Rle('20'),
-                 IRanges(start = 2854142, end = 3019315))
-
-what <- c("rname", "strand", "pos", "qwidth", "seq")
-param <- ScanBamParam(which=which, what=what)
-
-bam <- scanBam(file = '../data/BAM_files/HG00096.mapped.ILLUMINA.bwa.GBR.exome.20120522.bam', param=param)
+<<IRGM, eval = TRUE>>=
+data(Conrad.hg19)
+IRGM <- Conrad.hg19.common.CNVs[ seqnames(Conrad.hg19.common.CNVs) == 5 &
+                                start(Conrad.hg19.common.CNVs) > 150200000
+                                & end(Conrad.hg19.common.CNVs) < 150240000,]
+write.table(x = as.data.frame(IRGM),
+            row.names = FALSE, sep = '\t', quote = FALSE,
+            file = 'IRGM_common.tab')
 @ 
+
+
+We now want to look for individuals that carry this variant. 
+Low coverage whole genome data for the 1KG sample HG00123 will do the job.
+
+\noindent
+{\bf Exercise:} Identify the BAM file for mapped reads for HG00123 and download the slice 5:150200000-150225000 using \texttt{samtools view}.
+How would you filter pairs of reads that span over the deletion in this sample?
+
+
+<<download, eval = FALSE, engine = 'bash'>>=
+samtools view -b ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data/HG00123/alignment/HG00123.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam 5:150200000-150225000 > file.bam
+samtools view file.bam  | awk '{if (($9 > 15000) && ($9 < 25000)) print}' | less -S
+@
+
+{\bf (Optional) Exercise:} Can you write a R script (using Rsamtools) to identify these reads?
+
+
 
 
 

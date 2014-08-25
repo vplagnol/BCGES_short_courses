@@ -178,6 +178,25 @@ The \href{http://samtools.sourceforge.net/samtools.shtml}{manual page} is the fi
 
 \subsection{Using R}
 
+The \texttt{Rsamtools} package in \texttt{R} is very effective to parse BAM files, and extremely memory efficient, making full used of BAM indexes.
+Look at the example below for example.
+Inspect the output object called \texttt{bam.reads}.
+Can you understand its structure? See what it contains and how the data are organised?
+
+<<Rsamtools>>=
+library(Rsamtools)
+library(GenomicRanges)
+
+which <- GRanges(seqnames=Rle('20'),
+                 IRanges(start = 2854142, end = 3019315))
+
+what <- c("rname", "strand", "pos", "qwidth", "seq")
+param <- ScanBamParam(which=which, what=what)
+
+bam.reads <- scanBam(file = '../data/BAM_files_extra/HG00096.mapped.ILLUMINA.bwa.GBR.exome.20120522.bam', param=param)
+
+@ 
+
 
 
 
