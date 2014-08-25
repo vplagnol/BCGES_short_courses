@@ -1,5 +1,6 @@
 \documentclass[a4paper]{article}
-\usepackage{hyperref,fullpage}
+\usepackage[colorlinks=true]{hyperref}
+\usepackage{fullpage}
 
 \title{BCGES short courses, session 1 \newline Introduction}
 \date{}
@@ -61,10 +62,10 @@ man tail
 
 One can parse a text file using a variety of commands, and it is useful to become familiar with the following:
 <<reads, engine='bash', eval = FALSE>>=
-cat ../../data/fastq_files/fastq1_1.txt
-less ../../data/fastq_files/fastq1_1.txt
-more ../../data/fastq_files/fastq1_1.txt
-less -S ../../data/fastq_files/fastq1_1.txt
+cat ../data/fastq_files/fastq1_1.txt
+less ../data/fastq_files/fastq1_1.txt
+more ../data/fastq_files/fastq1_1.txt
+less -S ../data/fastq_files/fastq1_1.txt
 @ 
 
 \noindent
@@ -75,8 +76,8 @@ less -S ../../data/fastq_files/fastq1_1.txt
 
 A routine that is often useful is \texttt{wc} that counts the words/character/lines of a file. Try:
 <<wc, engine='bash', eval= FALSE>>=
-wc  ../../data/fastq_files/fastq1_1.txt
-wc  -l ../../data/fastq_files/fastq1_1.txt
+wc  ../data/fastq_files/fastq1_1.txt
+wc  -l ../data/fastq_files/fastq1_1.txt
 @
 
 
@@ -93,18 +94,18 @@ source("http://bioconductor.org/biocLite.R")
 biocLite("ShortRead")
 @ 
 
-<<load>>=
+<<load, results = 'hide', message = FALSE>>=
 library('ShortRead')
 @ 
 
 As a starting point it is possible to read some of the examples fastq files and create relevant \texttt{R} objects.
 <<readFastq, eval=TRUE>>=
-fastq1.1 <- readFastq('../../data/fastq_files/fastq1_1.txt')
-fastq1.2 <- readFastq('../../data/fastq_files/fastq1_2.txt')
+fastq1.1 <- readFastq('../data/fastq_files/fastq1_1.txt')
+fastq1.2 <- readFastq('../data/fastq_files/fastq1_2.txt')
 @ 
 
 We can now display the sequences and the qualities. Note that specific classes have been defined to store each of these objects.
-Much work has gone into figuring out how to do this.
+A lot of work has gone into figuring out how to do this.
 
 <<showFastq>>=
 reads <- sread(fastq1.1)
@@ -116,25 +117,7 @@ class(ids)
 head(as.character(ids))
 @ 
 
-
-\subsection{Using the Galaxy server}
-
-Start by identifying a working instance of the Galaxy server from this \href{https://wiki.galaxyproject.org/PublicGalaxyServers}{location}.
-There are multiple choices here, so feel free to experiment.
-In case of doubt, I used the following server: \href{http://biominavm-galaxy.biomina.be/galaxy/}{http://biominavm-galaxy.biomina.be/galaxy/}.
-
-\noindent
-{\bf Exercise:} Create an account on one of these Galaxy servers and upload the pair of fastq {\it fastq2\_1.txt} and {\it fastq2\_2.txt}.
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\newpage
-
-\section{Reading and interpreting quality scores}
-
-The quality scores can be read directly at the command line level, using commands like \texttt{head} or \texttt{tail}.
-But it is also possible and even practical to use R to do this.
+It is also possible to use this package to look at quality scores.
 For example, following up on the example above:
 
 <<showQuals>>=
@@ -148,12 +131,22 @@ The \texttt{ShortRead} package will attempt to guess what these quality scores m
 <<guessQual>>=
 encoding(quality(fastq1.1))
 
-fastq2.1 <- readFastq('../../data/fastq_files/fastq2_1.txt')
+fastq2.1 <- readFastq('../data/fastq_files/fastq2_1.txt')
 encoding(quality(fastq2.1))
 @ 
 
 \noindent
-{\bf Exercise (somewhat difficult):} Generate a plot showing the average Phred score as a function of the position in the read.
+{\bf (Optional, and somewhat difficult) Exercise:} Generate a plot showing the average Phred score as a function of the position in the read.
+
+\subsection{Using the Galaxy server}
+
+Start by identifying a working instance of the Galaxy server from this \href{https://wiki.galaxyproject.org/PublicGalaxyServers}{location}.
+There are multiple choices here, so feel free to experiment.
+In case of doubt, I used the following server: \href{http://biominavm-galaxy.biomina.be/galaxy/}{http://biominavm-galaxy.biomina.be/galaxy/}.
+
+\noindent
+{\bf Exercise:} Create an account on one of these Galaxy servers and upload the pair of fastq {\it fastq2\_1.txt} and {\it fastq2\_2.txt}.
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -175,12 +168,13 @@ The \href{http://samtools.sourceforge.net/samtools.shtml}{manual page} is the fi
 
 
 
-\subsection{Using R and \texttt{Rsamtools}}
+\subsection{Using \texttt{R} and \texttt{Rsamtools}}
 
 The \texttt{Rsamtools} package in \texttt{R} is very effective to parse BAM files, and extremely memory efficient, making full used of BAM indexes.
 Look at the example below for example.
 Inspect the output object called \texttt{bam.reads}.
 Can you understand its structure? See what it contains and how the data are organised?
+We will be using these tools later on in the CNV analysis section.
 
 <<Rsamtools>>=
 library(Rsamtools)
@@ -192,7 +186,8 @@ which <- GRanges(seqnames=Rle('21'),
 what <- c("rname", "strand", "pos", "qwidth", "seq")
 param <- ScanBamParam(which=which, what=what)
 
-bam.reads <- scanBam(file = '../data/BAM_files/HG00251.mapped.ILLUMINA.bwa.GBR.exome.20121211.bam', param=param)
+bam.reads <- scanBam(file = '../data/BAM_files/HG00251.mapped.ILLUMINA.bwa.GBR.exome.20121211.bam',
+                     param=param)
 names(bam.reads[[1]])
 @ 
 
