@@ -18,7 +18,10 @@ if (!forStudents) show <- 'markup' else show <- 'hide'
 @
 
 
-\section{\texttt{samtools} over the web to download BAM files}
+\clearpage
+\section{Two relatively more advanced ideas}
+
+\subsection{\texttt{samtools} over the web to download BAM files}
 
 A powerful feature of BAM/SAM and \texttt{samtools} is the ability to use the \texttt{view} feature with indexes over the web, to only pull the chunks of interest.
 I will provide an example of this using the 1,000 Genomes data.
@@ -28,14 +31,157 @@ wget -O 1KG_alignment.index ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/alignment.i
 @ 
 
 
+\subsection{Linux piping to limit input/output usage}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\section{Some examples PICARD tools}
+
+\subsection{Marking duplicates}
+
+<<dupli, eval = TRUE, engine = 'bash'>>=
+java -Xmx4g -jar picard/MarkDuplicates.jar  ASSUME_SORTED=true \
+      REMOVE_DUPLICATES=FALSE \
+      INPUT=../data/BAM_files/HG00130.mapped.ILLUMINA.bwa.GBR.exome.20130415.bam \
+      OUTPUT=HG00130.mapped.bam METRICS_FILE=HG00130.metrics.out
+@ 
+
+
+\subsection{Collect summary statistics}
+
+\subsection{Convert a BAM file to fastq}
+
+Now something quite a bit more challenging: try the following script to convert a BAM file to fastq:
+Here is a first attempt
+
+<<fastq.v1, eval = TRUE, engine = 'bash'>>=
+java -Xmx4g -jar picard/SamToFastq.jar \
+    INPUT=../data/BAM_files/HG00130.mapped.ILLUMINA.bwa.GBR.exome.20130415.bam \
+    FASTQ=read1.fq SECOND_END_FASTQ=read2.fq
+@ 
+
+The issue is that some reads do not have a mate, and that creates issues with the FASTQ files.
+We need a fix to deal with that error message.
+We can try the following, which should remove non-mapped reads:
+
+<<remove.non.mapped, eval = TRUE, engine = 'bash'>>=
+samtools view -f 0x0001 -f 0x0002 -b -o only_paired.bam GBR_1KG_exomes/HG00130.mapped.ILLUMINA.bwa.GBR.exome.20130415.bam
+
+java -Xmx4g -jar picard/SamToFastq.jar INPUT=paired.bam FASTQ=read1.fq SECOND_END_FASTQ=read2.fq
+@ 
+
+But it fails again. With only 2 unpaired mates this time, so things are getting better. 
+We can find out what these are:
+
+<<find.bad.reads, eval = TRUE, engine = 'bash'>>=
+samtools view paired.bam | awk '{print $1}' | sort | uniq -c | sort -r
+@ 
+
+Now let us remove these problematic reads, but we have to do it manually. 
+I could not find a better way to do this than what is shown below:
+
+<<remove.bad.reads, eval = TRUE, engine = 'bash'>>=
+samtools view -h paired.bam | awk '{if (($1 != "SRR707198.24062323") && ($1 != "SRR707198.20187117")) print}' > paired_fixed.sam
+samtools view -b -S -o paired_fixed.bam paired_fixed.sam
+@ 
+
+The second line above takes a SAM file input (option -S) and returns a BAM file (option -b).
+The resulting file can, at last, be converted into a FASTQ format:
+
+<<fastq.v2, eval = TRUE, engine = 'bash'>>=
+java -Xmx4g -jar picard/SamToFastq.jar INPUT=paired_fixed.bam FASTQ=read1.fq  SECOND_END_FASTQ=read2.fq
+@
+
+
 %%%%%%%%%%%%%%%%%%%%%%
+\clearpage
 \section{Read depth analysis to detect CNVs}
-<<exomeDepth>>=
+
+Run the example code provided in \texttt{exomeDepth\_example.R}.
+Familiarise yourself with the code, modify it to run with the sample \texttt{UCLG\_94\_sorted\_unique.bam}. 
+You should be able to see a two exon heterozygous deletion located in the gene {\it GATA2}, which is causal in this individual.
+
+<<exomeDepth, message = FALSE>>=
 library(ExomeDepth)
+@
+<<exomeDepth.2, message = FALSE, eval = TRUE>>=
+ExomeCount <- read.table('../data/exon_read_count.tab.gz', header = TRUE)
+my.test <- ExomeCount$UCLG.186_sorted_unique.bam
+all.bams <- grep(pattern = 'bam$', names(ExomeCount), value = TRUE)
+my.ref.samples <- subset( all.bams, all.bams != 'UCLG.186_sorted_unique.bam')
+
+my.reference.set <- as.matrix(ExomeCount[, my.ref.samples])
+
+my.choice <- select.reference.set (test.counts = my.test,
+                                   reference.counts = my.reference.set,
+                                   bin.length = (ExomeCount$end - ExomeCount$start)/1000,
+                                   n.bins.reduced = 10000)
+
+my.matrix <- as.matrix( ExomeCount[, my.choice$reference.choice, drop = FALSE])
+my.reference.selected <- apply(X = my.matrix,
+                               MAR = 1,
+                               FUN = sum)
+
+######### create the ExomeDepth object
+all.exons <- new('ExomeDepth',
+                 test = my.test,
+                 reference = my.reference.selected,
+                 formula = 'cbind(test, reference) ~ 1')
+
+all.exons <- CallCNVs(x = all.exons,
+                      transition.probability = 10^-4,
+                      chromosome = ExomeCount$chromosome,
+                      start = ExomeCount$start,
+                      end = ExomeCount$end,
+                      name = ExomeCount$exons)
+
+
+################# Now annotate the CNV calls
+data(Conrad.hg19)
+all.exons <- AnnotateExtra(x = all.exons,
+                           reference.annotation = Conrad.hg19.common.CNVs,
+                           min.overlap = 0.5,
+                           column.name = 'Conrad.hg19')
+
+data(exons.hg19)
+
+exons.hg19.GRanges <- GRanges(seqnames = exons.hg19$chromosome,
+                              IRanges(start=exons.hg19$start,end=exons.hg19$end),
+                              names = exons.hg19$name)
+
+all.exons <- AnnotateExtra(x = all.exons,
+                           reference.annotation = exons.hg19.GRanges,
+                           min.overlap = 0.0001,
+                           column.name = 'exons.hg19')
+
+
+
+####### Take the final table, sort by significance (Bayes factor)
+my.final.table <- all.exons@CNV.calls
+my.final.table <- my.final.table[ order(my.final.table$BF, decreasing = TRUE),]
+
+
+
+print(table(is.na(my.final.table$Conrad.hg19)))
+
+
+print(head(my.final.table))
+
+
+pdf('LRBA_example.pdf')
+plot (all.exons,
+      sequence = '4',
+      xlim = c(151749334 - 100000, 151948710 + 100000),
+      count.threshold = 20,
+      main = 'LRBA gene',
+      with.gene = TRUE)
+
+dev.off()
 @
 
 %%%%%%%%%%%%%%%%%%%%%%
-\section{Use Rsamtools to identify reads characteristic of a deletion}
+\section{Use \texttt{Rsamtools} to identify reads characteristic of a deletion}
 
 Another strategy to detect CNVs consists of picking up reads that show an unusual pattern.
 For example, two pairs further apart than they normally should is potentially flagging a deletion.
