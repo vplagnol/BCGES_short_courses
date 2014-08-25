@@ -20,10 +20,11 @@ if (!forStudents) show <- 'markup' else show <- 'hide'
 
 \section{\texttt{samtools} over the web to download BAM files}
 
-
-To do that download the list of whole genome alignments from the 1,000 genomes.
+A powerful feature of BAM/SAM and \texttt{samtools} is the ability to use the \texttt{view} feature with indexes over the web, to only pull the chunks of interest.
+I will provide an example of this using the 1,000 Genomes data.
+To do that, one should first download the list of whole genome alignments from the 1,000 Genomes to identify where the files of interest are located on the server.
 <<wget, eval = FALSE, engine = 'bash'>>=
-wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/alignment.index
+wget -O 1KG_alignment.index ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/alignment.index
 @ 
 
 
