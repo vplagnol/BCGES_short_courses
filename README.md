@@ -12,7 +12,7 @@ Session 3, Tuesday PM: TC, Variant detection and calling
 
 Session 4, Wednesday AM: VP, Multi-sample calling, variant annotation (Variant effect Predictor, ANNOVAR)
 
-Session 5, Wednesday PM: VP, Rsamtools, CNV calling using read depth analysis, split reads
+Session 5, Wednesday PM: VP, Picard tools, CNV calling using read depth analysis and unusual reads
 
 Session 6, Thursday AM: TC, De novo assembly
 
