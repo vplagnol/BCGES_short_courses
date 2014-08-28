@@ -152,6 +152,21 @@ In case of doubt, I used the following server: \href{http://biominavm-galaxy.bio
 \clearpage
 \section{Merging overlapping with paired reads}
 
+Another useful thing to be aware of is the possibility to merge read pairs that overlap in the middle.
+This happens when the combined length of both reads exceeds the length of the DNA fragment they originate from.
+A review of tools to perform this task is available \href{http://thegenomefactory.blogspot.de/2012/11/tools-to-merge-overlapping-paired-end.html}{here}.
+I propose here to have a look at the program \href{http://sco.h-its.org/exelixis/web/software/pear/doc.html}{PEAR}, which has been useful for the applications I had in mind.
+Start by downloading the pre-compiled binary to your own computer (this program is not preinstalled).
+You should be able to run something like the command below, after changing the path to the appropriate location of the executable:
+
+<<pear, engine = 'bash', eval = FALSE>>=
+/cluster/project8/vyp/vincent/Software/pear_github/PEAR-master/src/pear -e -v 10 -f ../data/fastq_for_merging/reads1.fq -r ../data/fastq_for_merging/reads1.fq -o merged -c 40
+@
+
+Check what the output looks like, in particular the read length of the assembled reads. 
+Have a look at the options that PEAR uses, and see how the choice of the v argument affects the final results.
+Note that PEAR requires that you know which of the reads are forward and reverse, which in practice is not the case so I am not completely sure how the program would run on a standard non-stranded fastq file.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \clearpage
