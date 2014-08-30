@@ -1,7 +1,7 @@
 \documentclass[a4paper]{article}
 \usepackage{hyperref,fullpage}
 
-\title{BCGES short courses, session 4: Multi-sample calling, VCF-tools and variant annotation}
+\title{BCGES short courses, session 4: Multi-sample calling, VCFtools and variant annotation}
 \date{}
 \author{}
 
@@ -17,6 +17,12 @@ if (!exists('forStudents')) forStudents <- TRUE  ##default is to print the stude
 if (!forStudents) {echo <- TRUE; results <- 'markup'} else {results <- 'hide'; echo  <- FALSE;}
 @
 
+\tableofcontents
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Multi-sample variant calling (about 1h30)}
+
 Multi-sample calling has several advantages:
 \begin{itemize}
 \item Borrow information from well covered samples to identify indels and other small variants, in turn improving the calling for other samples.
@@ -27,13 +33,7 @@ Multi-sample calling has several advantages:
 Both \texttt{GATK} and \texttt{samtools} provide options for multi-sample calling and we will explore how these scripts are setup today.
 
 
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Variant calling}
-
-\subsection{Installing the reference fasta file}
+\subsection{Installing the reference fasta file (5 minutes)}
 
 As far as I can tell, and unlike \texttt{samtools}, \texttt{GATK} requires that the fasta file matches the sequence dictionary as specified in the header of the BAM file.
 
@@ -52,46 +52,171 @@ These three steps download the compressed reference, unzip it and generate an in
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Samtools pileup and mpileup}
+\subsection{\texttt{Samtools} \texttt{pileup} and \texttt{mpileup} (30 minutes)}
 \texttt{samtools} is less feature-rich that \texttt{GATK} but it remains a dependable, solid piece of software that can provide very reliable callsets.
 It has been used for large scale projects like UK10K, and there is no reason to doubt the quality of these calls.
 Calling samples requires the presence of the reference sequence, in fasta format.
 The compressed file \texttt{chr21.fasta} is available on the github site to make it easy.
 It is however necessary to uncompress this file using \texttt{gunzip}.
 
-Once this is done, the script \texttt{multi_sample_calling_samtools.sh} describes the steps that generate a VCF file using \texttt{samtools}.
+Once this is done, the script \texttt{multi\_sample\_calling\_samtools.sh} describes the steps that generate a VCF file using \texttt{samtools}.
 
 \noindent
 {\bf Exercise:} Have a look at the scripts and make sure you can run them (in the simplest case just calling \texttt{sh script\_name.sh} might do). 
 They may need minor tweaking to point to the appropriate locations. It is important to understand all the options that are used.
 
+
+Now we can look at the output and make sure we understand what is there.
+For example, using a simple \texttt{awk} script, let us look at position 21:43847096:
+<<look.vcf, engine='bash'>>=
+awk '{if ( ($2 == "POS") || ($2 == 43847096)) print $1,$2,$4,$5,$9, $10, $15}' \
+              results/UBASH31A_samtools.vcf
+@ 
+
+Make sure that you understand the meaning of all the fields in the output vcf file.
+Of note, you can see the total depth for each sample in the output VCF file, but I do not think that an option exists in \texttt{samtools} to show the depth per allele, unlike GATK (see below).
+
 %%%%%%%%%%%%%%%%%%
-\subsection{GATK v2.0 Unified Genotyper}
+\subsection{GATK v2.0 Unified Genotyper (30 minutes)}
 The GATK Unified Genotyped (UG) has been the standard approach for GATK for a while, and still delivers high quality and reliable calls.
 For reasons that will be outlined in the next subsection, GATK has now transitioned toward a more powerful system called HaplotypeCaller.But there is nothing wrong with still using the UG module of GATK, and this subsection shows how to run such tools in the context of multi-sample calling.
 
 The Unified Genotyper (UG) version of the GATK pipeline is implemented in the script called \texttt{multi\_sample\_calling\_GATK\_UG.sh}.
+The key output of this script is the file \texttt{results/GATK\_msamplecalling.vcf}.
+Note that GATK reorders the samples by alphabetical order, so the order may not match what was specified in the input BAM list, and it may also not match the VCF output of \texttt{samtools}.
 
 \noindent
-{\bf Exercise:} As for the \texttt{samtools} subsection, make sure you can run these scripts, tweak them a bit and understand the options.
+{\bf Exercise:} As for the \texttt{samtools} subsection, make sure you can run these scripts, tweak them a bit and understand the options that I used. 
+Don't hesitate to look at the \href{http://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_sting_gatk_walkers_genotyper_UnifiedGenotyper.html}{manual page} for the UG tool to help you out.
+
+
+As before for \texttt{samtools}, we can look at the output VCF file and make sure we understand what is shown:
+<<look.vcf.2, engine='bash'>>=
+awk '{if ( ($2 == "POS") || ($2 == 43847096)) print $1,$2,$4,$5, $9, $11, $16}' \
+            results/GATK_msamplecalling.vcf
+@ 
+
+\noindent
+{\bf Exercise:} Make sure you fully understand the output from GATK. It differs from GATK in terms of what is shown, but there are also differences in terms of content (look for example at the sequencing depth for HG00255 at this locus). In general, can you make sense of why the read depth would differ? Can you find a GATK update related to this point in the \href{http://gatkforums.broadinstitute.org/discussion/4399/release-notes-for-gatk-version-3-2}{release notes} of the version 3.2?
+Observe also that the genotype likelihoods also differ significantly, even with the same input data.
 
 
 %%%%%%%%%%%%%%%%%%
-\subsection{GATK v3.0 HaplotypeCaller version of multi-sample calling}
+\subsection{GATK v3.0 HaplotypeCaller version of multi-sample calling (30 minutes)}
 The issue with the UG approach to large cohort is, to a large extent, computational.
 
 
+
+
+\clearpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{VCFtools}
+\section{VCFtools (about 45 minutes)}
+
+VCFtools is a swiss army type tool very handy for VCF manipulations.
+It contains a suite of Perl scripts, which we won't use today, as well as a binary executable, which will be the focus of this section.
+The documentation for the binary executable is located \href{http://vcftools.sourceforge.net/documentation.html}{here} and \href{http://vcftools.sourceforge.net/man_latest.html}{here}.
+
+The first thing I propose to do is to compare the output of the GATK v2.0 output (Unified Genotyper, or UG) with the output from \texttt{samtools}.
 
 
+<<vcftools.1, engine ='bash', eval = TRUE, echo = echo, results = results>>=
+vcftools --vcf results/UBASH31A_samtools.vcf  --freq --out results/samtools
+vcftools --vcf results/GATK_msamplecalling.vcf --freq --out results/GATK_UG
+@ 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Variant annotation using the Variant Effect Predictor (VEP)}
+Note that from this output it is easy to compare the number of calls for both algorithms.
+<<wc, engine = 'bash'>>=
+wc -l samtools.frq GATK_UG.frq
+@ 
+
+So where does the difference come from? A first thing is the fact that the call to GATK used a minimum quality filter of 30, which was not applied to the \texttt{samtools} output. 
+\texttt{VCFtools} allows you to recode VCF files after having applied relevant filters.
+Try for example:
+
+<<vcftools2, engine = 'bash'>>=
+vcftools --vcf results/UBASH31A_samtools.vcf --minQ 30 --out results/samtools_filtered --recode
+@ 
+
+Note the use of the \texttt{recode} argument.
+Without this, no new VCF file will be created.
+I suggest you try, and you will see nothing but a log file.
+
+\noindent
+{\bf Exercise:} Using the VCF output from \texttt{VCFtools}, create a new file with the frequency values for each site.
+Is the result more consistent with the output from GATK UG in terms of number of polymorphic sites?
+See how you could have created the same frequency file without the intermediate VCF file \texttt{results/samtools\_filtered.recode.vcf}.
+Make sure that this ``direct'' frequency file is identical to the one that used the intermediate VCF file.
+
+<<vcftools.answers, engine = 'bash', echo = echo, results = results>>=
+vcftools --vcf results/samtools_filtered.recode.vcf --freq --out results/freq_from_intermediate.vcf
+vcftools --vcf results/UBASH31A_samtools.vcf --minQ 30 --freq --out results/freq_direct_from_samtools_output.vcf
+@
 
 
+\noindent
+{\bf Optional exercise:} For the subset of variants present in both \texttt{samtools} and GATK UG output, generate a graph to compare the estimated variant frequencies (using \texttt{R} most likely, but feel free to use something else if you prefer).
 
 
+\clearpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Variant annotation (about 45 minutes)}
 
+\subsection{Running the variant effect predictor (VEP)}
+After having called variants, the next step consists of annotating them.
+A widely used and reliable tool is the Variant Effect Predictor (VEP), which is part of the tools provided by Ensembl.
+The simplest way to interact with the VEP is the \href{http://www.ensembl.org/Homo_sapiens/Tools/VEP}{web based interface}.
+One possible input format, and probably the most widely used, is VCF.
+There is no need to copy all the fields, only the first 8 will be sufficient.
+For example you could use:
+
+<<prep.VEP, engine = 'bash'>>=
+awk '{if ($1 == 21) print $1,$2,$3,$4,$5,$6,$7,$8}' \
+            results/UBASH31A_samtools.vcf > results/samtools_for_VEP.vcf
+@ 
+
+\noindent
+{\bf Exercise:} Note that there is a trap here. As the name indicates, these sequencing reads are supposed to cover the gene {\it UBASH31A}, however, none of the annotated variants is actually located in that gene. Can you figure out what went wrong? Fix it and download the output of the VEP in \texttt{csv} format (small excel like icon on the right side of the blue banner (see Figure \ref{VEP}).
+
+\begin{figure}[!hbt]
+  \includegraphics[width=15cm]{fig/screenshot_VEP.png}
+  \caption{Small icon on the right side is what you need to download the output in csv format}. \label{VEP}
+\end{figure}
+
+
+Running the VEP directly from the web is a very practical thing to do but it is not effective for very large amount of data (tens of thousand of variants...).
+It is possible to run it directly from your computer.
+If you do that, the first time you run the VEP, it will download locally all the files that you need.
+The installation has been stremalined extensively by the Ensembl team and the \texttt{INSTALL.pl} will fetch and install the minimum set of tools required for the VEP to run.
+
+<<down.VEP, engine = 'bash', eval = FALSE>>=
+wget -O VEP.zip https://github.com/Ensembl/ensembl-tools/archive/release/76.zip
+unzip VEP.zip
+cd ensembl-tools-release-76/scripts/variant_effect_predictor
+perl INSTALL.pl
+@ 
+
+You can read more about this process at \href{http://www.ensembl.org/info/docs/tools/vep/script/vep_download.html}{this location}.
+
+ 
+\noindent
+{\b Optional Exercise:} Install the VEP locally, including the cached file for the NCBI build 37 of the human genome. Run the VEP against the VCF files that was generated by \texttt{samtools}. Note that this step can be time consuming, and you may hit small technical issues on these computers mostly set up for teaching, but it should be possible to make these scripts work on most linux installs.
+
+
+%%%%%%%%%%%%
+\subsection{Interpreting the output of the VEP}
+
+You should have now downloaded the output of the VEP in csv format, but in case that is not the case my output is available ( \texttt{samtools\_output\_VEP.csv}).
+\texttt{R} is probably the best tool to read a csv file like the one generated by the VEP.
+
+\noindent
+{\bf Exercise:} Using \texttt{R}, load the output of the VEP. Look at the number of lines and understand the logic of the output, in particular why the number of lines exceeds the number of variants that were provided as input.
+
+%%%%%%%%%%%%%%
+\subsection{ANNOVAR as an alternative}
+
+Another software widely used is ANNOVAR. 
+It is also written in perl, and you can find all the details \href{http://www.openbioinformatics.org/annovar/}{here}.
+In class we will discuss the advantages and weaknessed of ANNOVAR compared to the VEP.
+They do deliver broadly comparable results, but the main difference comes from differences in the underlying databases (i.e. GENCODE, Ensembl, UCSC...).
 
 \end{document}

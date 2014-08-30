@@ -17,5 +17,5 @@ find ../data/BAM_files/ -name *bam > results/all_GBR_BAMs.list
 
 
 
-$samtools mpileup -uf $fasta -b results/all_GBR_BAMs.list | $bcftools view -bvcg - > results/UBASH31A_samtools.bcf   
+$samtools mpileup -r 21:43823971-43867790 -Duf $fasta -b results/all_GBR_BAMs.list | $bcftools view -bvcg - > results/UBASH31A_samtools.bcf   
 $bcftools view results/UBASH31A_samtools.bcf  > results/UBASH31A_samtools.vcf
