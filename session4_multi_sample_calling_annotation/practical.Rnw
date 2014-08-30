@@ -1,7 +1,7 @@
 \documentclass[a4paper]{article}
 \usepackage{hyperref,fullpage}
 
-\title{BCGES short courses, session 4: Multi-sample calling and variant annotation}
+\title{BCGES short courses, session 4: Multi-sample calling, VCF-tools and variant annotation}
 \date{}
 \author{}
 
@@ -28,22 +28,10 @@ Both \texttt{GATK} and \texttt{samtools} provide options for multi-sample callin
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Multi-sample calling using samtools}
-
-\texttt{samtools} is less feature-rich that \texttt{GATK} but it remains a dependable, solid piece of software that can provide very reliable callsets.
-It has been used for large scale projects like UK10K, and there is no reason to doubt the quality of these calls.
-Calling samples requires the presence of the reference sequence, in fasta format.
-The compressed file \texttt{chr21.fasta} is available on the github site to make it easy.
-It is however necessary to uncompress this file using \texttt{gunzip}.
-
-Once this is done, the script \texttt{multi_sample_calling_samtools.sh} describes the steps that generate a VCF file using \texttt{samtools}.
 
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Multi-sample calling using the GATK Unified Genotyper}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Variant calling}
 
 \subsection{Installing the reference fasta file}
 
@@ -63,14 +51,39 @@ samtools faidx human_g1k_v37.fasta
 These three steps download the compressed reference, unzip it and generate an index for that file.
 
 
-\subsection{Actual variant calling}
-The Unified Genotyper version of the GATK pipeline is implemented in the script called \texttt{multi\_sample\_calling\_GATK\_UG.sh}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Samtools pileup and mpileup}
+\texttt{samtools} is less feature-rich that \texttt{GATK} but it remains a dependable, solid piece of software that can provide very reliable callsets.
+It has been used for large scale projects like UK10K, and there is no reason to doubt the quality of these calls.
+Calling samples requires the presence of the reference sequence, in fasta format.
+The compressed file \texttt{chr21.fasta} is available on the github site to make it easy.
+It is however necessary to uncompress this file using \texttt{gunzip}.
+
+Once this is done, the script \texttt{multi_sample_calling_samtools.sh} describes the steps that generate a VCF file using \texttt{samtools}.
+
+\noindent
+{\bf Exercise:} Have a look at the scripts and make sure you can run them (in the simplest case just calling \texttt{sh script\_name.sh} might do). 
+They may need minor tweaking to point to the appropriate locations. It is important to understand all the options that are used.
+
+%%%%%%%%%%%%%%%%%%
+\subsection{GATK v2.0 Unified Genotyper}
+The GATK Unified Genotyped (UG) has been the standard approach for GATK for a while, and still delivers high quality and reliable calls.
+For reasons that will be outlined in the next subsection, GATK has now transitioned toward a more powerful system called HaplotypeCaller.But there is nothing wrong with still using the UG module of GATK, and this subsection shows how to run such tools in the context of multi-sample calling.
+
+The Unified Genotyper (UG) version of the GATK pipeline is implemented in the script called \texttt{multi\_sample\_calling\_GATK\_UG.sh}.
+
+\noindent
+{\bf Exercise:} As for the \texttt{samtools} subsection, make sure you can run these scripts, tweak them a bit and understand the options.
 
 
+%%%%%%%%%%%%%%%%%%
+\subsection{GATK v3.0 HaplotypeCaller version of multi-sample calling}
+The issue with the UG approach to large cohort is, to a large extent, computational.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{GATK v3.0 HaplotypeCaller version of multi-sample calling}
+\section{VCFtools}
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
