@@ -15,8 +15,11 @@ if (!exists('forStudents')) forStudents <- TRUE  ##default is to print the stude
 if (!forStudents) {echo <- TRUE; results <- 'markup'} else {results <- 'hide'; echo  <- FALSE;}
 @
 
+\tableofcontents
+\clearpage
 
-\section{Two more advanced ideas to consider}
+
+\section{Two more advanced ideas to consider (20 minutes)}
 
 \subsection{\texttt{samtools} over the web to download BAM files}
 
@@ -54,7 +57,7 @@ novoalign -c 11 -o SAM -F STDFQ -f fasta1.fq fasta2.fq  -d $reference |
 
 %%%%%%%%%%%%%%%%%%%%%%%
 \clearpage
-\section{Some examples PICARD tools}
+\section{Some examples PICARD tools (40 minutes)}
 
 \subsection{Marking duplicates}
 
@@ -128,7 +131,7 @@ java -Xmx4g -jar picard/SamToFastq.jar INPUT=paired_fixed.bam FASTQ=read1.fq  SE
 
 %%%%%%%%%%%%%%%%%%%%%%
 \clearpage
-\section{Read depth analysis to detect CNVs}
+\section{Read depth analysis to detect CNVs (30 minutes)}
 
 Run the example code provided in \texttt{exomeDepth\_example.R}.
 Familiarise yourself with the code, modify it to run with the sample \texttt{UCLG\_94\_sorted\_unique.bam}. 
@@ -213,7 +216,7 @@ dev.off()
 @
 
 %%%%%%%%%%%%%%%%%%%%%%
-\section{Use \texttt{Rsamtools} to identify reads characteristic of a deletion}
+\section{Use \texttt{Rsamtools} to identify reads characteristic of a deletion (30 minutes)}
 
 Another strategy to detect CNVs consists of picking up reads that show an unusual pattern.
 For example, two pairs further apart than they normally should is potentially flagging a deletion.
@@ -246,6 +249,7 @@ samtools view file.bam  | awk '{if (($9 > 15000) && ($9 < 25000)) print}' | less
 @
 
 \noindent
+{\bf Exercise:} Use IGV to visualize the deletion.\\
 {\bf (Optional) Exercise:} Can you write a R script (using Rsamtools) to identify these reads?
 
 

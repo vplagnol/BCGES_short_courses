@@ -17,7 +17,6 @@ if (!exists('forStudents')) forStudents <- TRUE  ##default is to print the stude
 if (!forStudents) {echo <- TRUE; results <- 'markup'} else {results <- 'hide'; echo  <- FALSE;}
 @
 
-
 The aim of this first session is to introduce the tools that we will use to manipulate sequence data.
 Generally speaking, we will deal with either \texttt{R}, bash scripting or \href{https://wiki.galaxyproject.org/PublicGalaxyServers}{Galaxy}.
 

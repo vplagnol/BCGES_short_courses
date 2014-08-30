@@ -2,7 +2,9 @@ BCGES_short_courses
 ===================
 
 Sequence data analysis short courses, slides and practicals
-
+AM starts at 9:30
+PM at 13:30
+Each session lasts 3h.
 
 Session 1, Monday September 8, PM: VP and Claudia Giambartolomei, Introduction session, fastq and BAM format, basic data parsing using R, command line scripting and Galaxy server.
 
