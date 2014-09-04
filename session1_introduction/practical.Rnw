@@ -33,10 +33,10 @@ So we will use \texttt{R} mostly to play with the data and show the sort of thin
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \clearpage
-\section{Basic fastq reading and quality control}
+\section{Basic fastq reading and quality control (1h)}
 
 
-\subsection{Basic shell scripting to read NGS files}
+\subsection{Basic shell scripting to read NGS files (20 minutes)}
 
 
 Many of the standard HTS formats are simple text files, with tightly defined specifications to allow effective parsing.
@@ -67,7 +67,7 @@ less -S ../data/fastq_files/fastq1_1.txt
 @ 
 
 \noindent
-{\bf Exercise:} Can you see the differences between these various ways of reading a file?
+{\bf Exercise:} Can you see the differences between these different ways of reading a file?
 
 \vspace{1.5cm}
 
@@ -85,7 +85,7 @@ wc  -l ../data/fastq_files/fastq1_1.txt
 
 
 
-\subsection{Using the shortRead package in R}
+\subsection{Using the shortRead package in R (15 minutes)}
 We start by loading one of the most relevant library, called ``ShortReads''. This package may not be installed but it can easily done so by running:
 <<install, eval = FALSE>>=
 source("http://bioconductor.org/biocLite.R")
@@ -136,7 +136,7 @@ encoding(quality(fastq2.1))
 \noindent
 {\bf (Optional, and somewhat difficult) Exercise:} Generate a plot showing the average Phred score as a function of the position in the read.
 
-\subsection{Using the Galaxy server}
+\subsection{Using the Galaxy server (30 minutes)}
 
 Start by identifying a working instance of the Galaxy server from this \href{https://wiki.galaxyproject.org/PublicGalaxyServers}{location}.
 There are multiple choices here, so feel free to experiment.
@@ -144,12 +144,22 @@ In case of doubt, I used the following server: \href{http://biominavm-galaxy.bio
 
 \noindent
 {\bf Exercise:} Create an account on one of these Galaxy servers and upload the pair of fastq {\it fastq2\_1.txt} and {\it fastq2\_2.txt}.
+Run the \texttt{fastqc} code on these files (note that a standalone version also exists and can be found \href{http://www.bioinformatics.babraham.ac.uk/projects/fastqc/}{here}).
 
+<<tips1>>=
+#A difficulty is that the two fastq files need to be joined together to mark the fact that they are paired end reads.
+#There is a tool to do this called FASTQ joiner.
+#And if FASTQ joiner does not work, it is probably because you need to run \texttt{FASTQ Groomer} first, 
+#which does some magic to ``prepare'' the fastq files.  
+@ 
+
+\noindent
+{\bf (Optional) Exercise:} Run \texttt{fastqc} locally (after downloading it from the  \href{http://www.bioinformatics.babraham.ac.uk/projects/fastqc/}{web}) and compare the output with what you get from Galaxy (it should be identical!).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \clearpage
-\section{Merging overlapping with paired reads}
+\section{Merging overlapping paired reads reads (20 minutes)}
 
 Another useful thing to be aware of is the possibility to merge read pairs that overlap in the middle.
 This happens when the combined length of both reads exceeds the length of the DNA fragment they originate from.
@@ -159,29 +169,91 @@ Start by downloading the pre-compiled binary to your own computer (this program 
 You should be able to run something like the command below, after changing the path to the appropriate location of the executable:
 
 <<pear, engine = 'bash', eval = FALSE>>=
-/cluster/project8/vyp/vincent/Software/pear_github/PEAR-master/src/pear -e -v 10 -f ../data/fastq_for_merging/reads1.fq -r ../data/fastq_for_merging/reads1.fq -o merged -c 40
+/cluster/project8/vyp/vincent/Software/pear_github/PEAR-master/src/pear -e -v 10 \
+   -f ../data/fastq_for_merging/reads1.fq -r ../data/fastq_for_merging/reads1.fq -o merged -c 40
 @
 
 Check what the output looks like, in particular the read length of the assembled reads. 
-Have a look at the options that PEAR uses, and see how the choice of the v argument affects the final results.
-Note that PEAR requires that you know which of the reads are forward and reverse, which in practice is not the case so I am not completely sure how the program would run on a standard non-stranded fastq file.
+Have a look at the options that PEAR uses, and see how the choice of the \texttt{v} argument affects the final results.
+
+\noindent
+{\bf Warning:} Note that PEAR requires that you know which of the reads are forward and reverse, which is probably not the case for a fastq file that is not stranded or that has been processed. So be a bit careful before running this code on a generic fastq.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \clearpage
-\section{Reading BAM files}
+\section{Reading and manipulating BAM files (about 1.5h)}
 BAM files are compressed files that contain the information from the FASTQ files, plus additional information about the location where the reads map.
 A key feature of the BAM files is that they can be indexed, i.e. an associated file contains information about where each of the reads are located in the file.
 It allows very quick retrieval of reads that map to a given genomic location, which is the typical way one wants to use BAM files (for example, to extract all the reads that map to a gene of interest in order to find rare variants).
 
-\subsection{Using shell scripts}
+\subsection{Using shell scripts ans \texttt{samtools} (40 minutes)}
 
 \texttt{samtools} is the key piece of software that is used to read, write and index BAM files.
 The \href{http://samtools.sourceforge.net/samtools.shtml}{manual page} is the first place to go to find information about how to use \texttt{samtools}.
+A very useful feature of \texttt{samtools} is that it can work over a ftp site, by downloading the index locally and only pulling the reads that are relevant.
+That allows to access rich datasets online without having to download very large files.
+The exercise below illustrates some of these features.
+
+\noindent
+{\bf Exercise:} The following should be useful as an introduction to the sort of things one may want to do with \texttt{samtools}.
+The manual page should have all the commands and ideas to go through these, so best to have a go and try.
+
+
+\begin{enumerate}
+\item Download the index of all the aligned file from the 1,000 Genomes. You can for example do it using:
+<<wget, engine = 'bash', eval = TRUE>>=
+wget -O 1KG_index.tab ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/exome.alignment.index
+@ 
+\item Using \texttt{samtools view} over the web, download the {\it BRCA1} reads for the sample \texttt{HG00118}.
+  You will first need to find where that file is located on the web, using the index you just downloaded.
+  Make sure that your output is in BAM format.
+<<view, engine = 'bash', echo = echo, results = results>>=
+grep HG00118 1KG_index.tab  | grep HG00118.mapped.ILLUMINA | awk '{print $1}'
+BAM=ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data/HG00118/exome_alignment/HG00118.mapped.ILLUMINA.bwa.GBR.exome.20130415.bam
+samtools view -b -o BRCA1_HG00118.bam $BAM 17:41243452-41277500
+@ 
+\item Index this BAM file using \texttt{samtools index}.
+<<index, engine = 'bash', echo = echo, results = results>>=
+samtools index BRCA1_HG00118.bam
+@ 
+\item Still using \texttt{samtools view}, subset the BAM file for the first coding exon (not the UTR) of {\it BRCA1}  (use transcript ENST00000357654 from Ensembl) and output in SAM format.
+<<exon1, engine = 'bash', echo = echo, results = results>>=
+samtools view BRCA1_HG00118.bam 17:43124115-43124017  > BRCA1_exon1.sam
+@ 
+\item Exercise: What do these lines do?
+<<view.2, engine = 'bash', eval = FALSE>>=
+samtools view -f 0x0002 BRCA1_HG00118.bam
+samtools view -F 0x0002 BRCA1_HG00118.bam
+samtools view -F 0x0040 BRCA1_HG00118.bam
+@ 
+<<view.tips, engine = 'bash', eval = FALSE, results = results, echo = echo>>=
+samtools view -f 0x0002 BRCA1_HG00118.bam #prints properly mapped pairs
+samtools view -F 0x0002 BRCA1_HG00118.bam #excludes properly mapped pairs
+samtools view -F 0x0040 BRCA1_HG00118.bam #print first read of pair
+@ 
+\end{enumerate}
+
+
+\subsection{Understanding the SAM/BAM headers (10 minutes)}
+
+Key information about a BAM file can be obtained from the headers.
+\texttt{Samtools} is once again the key tool to read these data.
+You can view these headers using:
+<<headers, engine = 'bash'>>=
+samtools view -H BRCA1_HG00118.bam > headers.txt
+@ 
+<<headers.2, engine = 'bash', eval = FALSE>>=
+less -S headers.txt
+@ 
+
+\noindent
+{\bf Exercise:} Go through the output of \texttt{samtools view -H} and make sure you understand what all the fields mean.
+This will be discussed in class. In the case of the downloaded 1KG file, much processing has happened so not all fields will make sense, but the important thing is to understand the general philosophy of the file. The ID, LB, SM tags are particularly useful.
 
 
 
-\subsection{Using \texttt{R} and \texttt{Rsamtools}}
+\subsection{Using \texttt{R} and \texttt{Rsamtools} (20 minutes)}
 
 The \texttt{Rsamtools} package in \texttt{R} is very effective to parse BAM files, and extremely memory efficient, making full used of BAM indexes.
 Look at the example below for example.
@@ -202,6 +274,7 @@ param <- ScanBamParam(which=which, what=what)
 bam.reads <- scanBam(file = '../data/BAM_files/HG00251.mapped.ILLUMINA.bwa.GBR.exome.20121211.bam',
                      param=param)
 names(bam.reads[[1]])
+head(bam.reads[[1]]$pos)
 @ 
 
 
@@ -210,7 +283,7 @@ names(bam.reads[[1]])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \clearpage
-\section{Session info}
+\section*{Session info}
 <<sessionInfo>>=
 sessionInfo()
 @ 
