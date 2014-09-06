@@ -189,7 +189,7 @@ You should be able to run something like the command below, after changing the p
 
 <<pear, engine = 'bash', eval = FALSE>>=
 bin/pear-0.9.4-64 -e -v 10 \
-   -f ../data/fastq_for_merging/reads1.fq -r ../data/fastq_for_merging/reads1.fq -o merged -c 40
+   -f ../data/fastq_for_merging/reads1.fq -r ../data/fastq_for_merging/reads1.fq -o results/merged -c 40
 @
 
 Check what the output looks like, in particular the read length of the assembled reads. 
