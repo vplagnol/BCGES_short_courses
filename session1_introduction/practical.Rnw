@@ -84,12 +84,13 @@ wc  -l ../data/fastq_files/fastq1_1.txt
 {\bf Exercise:} Using the man page, find a way to print the first 20 lines of a fastq file (and what about the last 20 lines)?\\
 {\bf Exercise:} Based on the \texttt{wc} output, how many reads do these fastq files contain?
 
-<<<wc.answers, engine='bash', eval= TRUE, echo = echo, results = results>>=
+<<wc.answers, engine='bash', eval= TRUE, echo = echo, results = results>>=
 ## Some answers to the two questions above:
-head -20 ../data/fastq_files/fastq1_1.txt > first_20.txt
-tail -20 ../data/fastq_files/fastq1_1.txt > last_20.txt
+head -20 ../data/fastq_files/fastq1_1.txt > results/first_20.txt
+tail -20 ../data/fastq_files/fastq1_1.txt > results/last_20.txt
 ## each read uses 4 lines, so the output of wc -l must be divided by 4 to get the read count.
-@ >>=
+@
+
 
 
 \subsection{Using the shortRead package in R (15 minutes)}
@@ -222,39 +223,39 @@ The manual page should have all the commands and ideas to go through these, so b
 \begin{enumerate}
 \item Download the index of all the aligned file from the 1,000 Genomes. You can for example do it using:
 <<wget, engine = 'bash', eval = TRUE>>=
-wget -O 1KG_index.tab ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/exome.alignment.index
+wget -O results/1KG_index.tab ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/exome.alignment.index
 @ 
 \item Using \texttt{samtools view} over the web, download the {\it BRCA1} reads for the sample \texttt{HG00118}.
   You will first need to find where that file is located on the web, using the index you just downloaded.
   Make sure that your output is in BAM format.
 <<view, engine = 'bash', echo = echo, results = results>>=
 ##first I grep the index file to find the filename
-grep HG00118 1KG_index.tab  | grep HG00118.mapped.ILLUMINA | awk '{print $1}'
+grep HG00118 results/1KG_index.tab  | grep HG00118.mapped.ILLUMINA | awk '{print $1}'
 BAM=ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data/HG00118/exome_alignment/HG00118.mapped.ILLUMINA.bwa.GBR.exome.20130415.bam
 ##Then samtools view, note the -b option to generate a BAM output
-samtools view -b -o BRCA1_HG00118.bam $BAM 17:41243452-41277500
+samtools view -b -o results/BRCA1_HG00118.bam $BAM 17:41243452-41277500
 @ 
 \item Index this BAM file using \texttt{samtools index}.
 <<index, engine = 'bash', echo = echo, results = results>>=
 ##Basic index command below, a must know!
-samtools index BRCA1_HG00118.bam
+samtools index results/BRCA1_HG00118.bam
 @ 
 \item Still using \texttt{samtools view}, subset the BAM file for the first coding exon (not the UTR) of {\it BRCA1}  (use transcript ENST00000357654 from Ensembl) and output in SAM format.
 <<exon1, engine = 'bash', echo = echo, results = results>>=
 ## the line of code below should create that SAM file
-samtools view BRCA1_HG00118.bam 17:43124115-43124017  > BRCA1_exon1.sam
+samtools view results/BRCA1_HG00118.bam 17:43124115-43124017  > results/BRCA1_exon1.sam
 @ 
 \item Exercise: What do these lines do?
 <<view.2, engine = 'bash', eval = FALSE>>=
-samtools view -f 0x0002 BRCA1_HG00118.bam
-samtools view -F 0x0002 BRCA1_HG00118.bam
-samtools view -F 0x0040 BRCA1_HG00118.bam
+samtools view -f 0x0002 results/BRCA1_HG00118.bam
+samtools view -F 0x0002 results/BRCA1_HG00118.bam
+samtools view -F 0x0040 results/BRCA1_HG00118.bam
 @ 
 <<view.tips, engine = 'bash', eval = FALSE, results = results, echo = echo>>=
 ## Some short comments for each line below
-samtools view -f 0x0002 BRCA1_HG00118.bam #prints properly mapped pairs
-samtools view -F 0x0002 BRCA1_HG00118.bam #excludes properly mapped pairs
-samtools view -F 0x0040 BRCA1_HG00118.bam #print first read of pair
+samtools view -f 0x0002 results/BRCA1_HG00118.bam #prints properly mapped pairs
+samtools view -F 0x0002 results/BRCA1_HG00118.bam #excludes properly mapped pairs
+samtools view -F 0x0040 results/BRCA1_HG00118.bam #print first read of pair
 @ 
 \end{enumerate}
 
