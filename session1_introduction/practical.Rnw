@@ -14,7 +14,7 @@
 
 <<setup, results = 'hide', echo = FALSE>>=
 if (!exists('forStudents')) forStudents <- TRUE  ##default is to print the student version
-if (!forStudents) {echo <- TRUE; results <- 'markup'; fig.show <- TRUE} else {results <- 'hide'; echo  <- FALSE; fig.show <- FALSE;}
+if (!forStudents) {echo <- TRUE; results <- 'markup'; fig.show <- 'asis'} else {results <- 'hide'; echo  <- FALSE; fig.show <- 'hide';}
 options(tidy=TRUE, width=80)
 @
 
