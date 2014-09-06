@@ -1,5 +1,6 @@
 \documentclass[a4paper]{article}
-\usepackage{hyperref,fullpage}
+\usepackage[colorlinks=true]{hyperref}
+\usepackage{fullpage}
 
 \title{BCGES short courses, session 4: Multi-sample calling, VCFtools and variant annotation}
 \date{}

@@ -14,7 +14,8 @@
 
 <<setup, results = 'hide', echo = FALSE>>=
 if (!exists('forStudents')) forStudents <- TRUE  ##default is to print the student version
-if (!forStudents) {echo <- TRUE; results <- 'markup'} else {results <- 'hide'; echo  <- FALSE;}
+if (!forStudents) {echo <- TRUE; results <- 'markup'; fig.show <- TRUE} else {results <- 'hide'; echo  <- FALSE; fig.show <- FALSE;}
+options(tidy=TRUE, width=80)
 @
 
 The aim of this first session is to introduce the tools that we will use to manipulate sequence data.
@@ -83,6 +84,12 @@ wc  -l ../data/fastq_files/fastq1_1.txt
 {\bf Exercise:} Using the man page, find a way to print the first 20 lines of a fastq file (and what about the last 20 lines)?\\
 {\bf Exercise:} Based on the \texttt{wc} output, how many reads do these fastq files contain?
 
+<<<wc.answers, engine='bash', eval= TRUE, echo = echo, results = results>>=
+## Some answers to the two questions above:
+head -20 ../data/fastq_files/fastq1_1.txt > first_20.txt
+tail -20 ../data/fastq_files/fastq1_1.txt > last_20.txt
+## each read uses 4 lines, so the output of wc -l must be divided by 4 to get the read count.
+@ >>=
 
 
 \subsection{Using the shortRead package in R (15 minutes)}
@@ -136,21 +143,33 @@ encoding(quality(fastq2.1))
 \noindent
 {\bf (Optional, and somewhat difficult) Exercise:} Generate a plot showing the average Phred score as a function of the position in the read.
 
+<<plotQual, eval = TRUE, results = results, echo = echo, fig.show = fig.show, fig.width = 7, fig.height = 7>>=
+## Here is how I would create that plot
+ave.qual <- apply(FUN = mean, MAR = 2, as(quals, 'matrix'))
+plot (x = 1:length(ave.qual),
+      y = ave.qual,
+      xlab = 'Position in read',
+      ylab = 'Average Phred score')
+@ 
+
+  
 \subsection{Using the Galaxy server (30 minutes)}
 
 Start by identifying a working instance of the Galaxy server from this \href{https://wiki.galaxyproject.org/PublicGalaxyServers}{location}.
 There are multiple choices here, so feel free to experiment.
-In case of doubt, I used the following server: \href{http://biominavm-galaxy.biomina.be/galaxy/}{http://biominavm-galaxy.biomina.be/galaxy/}.
+In case of doubt, I propose that you use the \href{https://usegalaxy.org/}{main Galaxy instance}.
+However, I have used the following: \href{http://biominavm-galaxy.biomina.be/galaxy/}{http://biominavm-galaxy.biomina.be/galaxy/}, and it worked for me.
+However, be ready for small and subtle differences and be flexible.
 
 \noindent
 {\bf Exercise:} Create an account on one of these Galaxy servers and upload the pair of fastq {\it fastq2\_1.txt} and {\it fastq2\_2.txt}.
 Run the \texttt{fastqc} code on these files (note that a standalone version also exists and can be found \href{http://www.bioinformatics.babraham.ac.uk/projects/fastqc/}{here}).
 
-<<tips1>>=
+<<tips1, tidy = TRUE, echo = echo, results = results>>=
 #A difficulty is that the two fastq files need to be joined together to mark the fact that they are paired end reads.
 #There is a tool to do this called FASTQ joiner.
-#And if FASTQ joiner does not work, it is probably because you need to run \texttt{FASTQ Groomer} first, 
-#which does some magic to ``prepare'' the fastq files.  
+#And if FASTQ joiner does not work, it is probably because you need to run FASTQ Groomer first, which does some magic to ``prepare'' the fastq files.
+#But these things may differ for different instances of the Galaxy server. Be flexible!
 @ 
 
 \noindent
@@ -169,7 +188,7 @@ Start by downloading the pre-compiled binary to your own computer (this program 
 You should be able to run something like the command below, after changing the path to the appropriate location of the executable:
 
 <<pear, engine = 'bash', eval = FALSE>>=
-/cluster/project8/vyp/vincent/Software/pear_github/PEAR-master/src/pear -e -v 10 \
+bin/pear-0.9.4-64 -e -v 10 \
    -f ../data/fastq_for_merging/reads1.fq -r ../data/fastq_for_merging/reads1.fq -o merged -c 40
 @
 
@@ -209,16 +228,20 @@ wget -O 1KG_index.tab ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/exome.alignment.i
   You will first need to find where that file is located on the web, using the index you just downloaded.
   Make sure that your output is in BAM format.
 <<view, engine = 'bash', echo = echo, results = results>>=
+##first I grep the index file to find the filename
 grep HG00118 1KG_index.tab  | grep HG00118.mapped.ILLUMINA | awk '{print $1}'
 BAM=ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data/HG00118/exome_alignment/HG00118.mapped.ILLUMINA.bwa.GBR.exome.20130415.bam
+##Then samtools view, note the -b option to generate a BAM output
 samtools view -b -o BRCA1_HG00118.bam $BAM 17:41243452-41277500
 @ 
 \item Index this BAM file using \texttt{samtools index}.
 <<index, engine = 'bash', echo = echo, results = results>>=
+##Basic index command below, a must know!
 samtools index BRCA1_HG00118.bam
 @ 
 \item Still using \texttt{samtools view}, subset the BAM file for the first coding exon (not the UTR) of {\it BRCA1}  (use transcript ENST00000357654 from Ensembl) and output in SAM format.
 <<exon1, engine = 'bash', echo = echo, results = results>>=
+## the line of code below should create that SAM file
 samtools view BRCA1_HG00118.bam 17:43124115-43124017  > BRCA1_exon1.sam
 @ 
 \item Exercise: What do these lines do?
@@ -228,6 +251,7 @@ samtools view -F 0x0002 BRCA1_HG00118.bam
 samtools view -F 0x0040 BRCA1_HG00118.bam
 @ 
 <<view.tips, engine = 'bash', eval = FALSE, results = results, echo = echo>>=
+## Some short comments for each line below
 samtools view -f 0x0002 BRCA1_HG00118.bam #prints properly mapped pairs
 samtools view -F 0x0002 BRCA1_HG00118.bam #excludes properly mapped pairs
 samtools view -F 0x0040 BRCA1_HG00118.bam #print first read of pair
