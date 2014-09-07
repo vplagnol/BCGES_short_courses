@@ -10,7 +10,7 @@ fasta=/cluster/project8/vyp/vincent/data/reference_genomes/fasta/human_g1k_v37.f
 find ../data/BAM_files/ -name *bam > results/all_GBR_BAMs.list
 
 
-/share/apps/jdk1.7.0_25/jre/bin/java -Djava.io.tmpdir=tmp/ -Xmx4g -jar $GATK -T UnifiedGenotyper \
+java -Djava.io.tmpdir=tmp/ -Xmx4g -jar $GATK -T UnifiedGenotyper \
     -I results/all_GBR_BAMs.list \
     -R $fasta -o results/GATK_msamplecalling.vcf --annotation QualByDepth\
     --annotation HaplotypeScore --annotation MappingQualityRankSumTest --annotation ReadPosRankSumTest --annotation FisherStrand\

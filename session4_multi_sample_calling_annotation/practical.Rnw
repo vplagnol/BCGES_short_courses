@@ -103,10 +103,47 @@ Observe also that the genotype likelihoods also differ significantly, even with 
 
 
 %%%%%%%%%%%%%%%%%%
-\subsection{GATK v3.0 HaplotypeCaller version of multi-sample calling (30 minutes)}
+\subsection{GATK v3.0 \texttt{HaplotypeCaller} version of multi-sample calling (30 minutes)}
 The issue with the UG approach to large cohort is, to a large extent, computational.
+It is very impractical to call very large cohorts of samples together because of the (n+1) problem: if you add one sample, you ideally would like to not recall the 2,000 other samples at the same time.
+How do we go around that? This is the point of the updated GATK pipeline which is well suited for the analysis of very large cohorts.
+The principle is simple:
+\begin{itemize}
+\item Step1: each BAM file is processed individually by the \texttt{HaplotypeCaller} module. The output is a format called gVCF, which extends the concept of the VCF. 
+It essentially keeps information at all positions, not only the polymorphic ones. It is essential to separate regions without coverage from the ones with coverage but no polymorphism.
+\item Step 2: these gVCF files are combined together using the \texttt{GenotypeGVCF} module of \texttt{GATK} to create a single gVCF file, which can then be processed as usual.
+\end{itemize}
 
+An example of the gVCF output is shown below:
+<<gVCF.look, engine = 'bash'>>=
+awk '{if ( (NR == 199) || (NR == 200) || (NR == 201) ) print $1,$2,$8,$9,$10}' \
+       results/HG00257.mapped.ILLUMINA.bwa.GBR.exome.20121211.gvcf
+@
 
+\noindent
+{\bf Exercise:} These two steps are described in two independent scripts called \texttt{multi\_sample\_calling\_GATK\_HC\_step1.sh} and \texttt{multi\_sample\_calling\_GATK\_HC\_step2.sh}. These scripts will need light editing to run properly, essentially modifying the path to the fasta reference genome file and the path to \texttt{GATK}. Make sure you can run the scripts, and that you understand the options that I used.
+
+\noindent
+{\bf Exercise:} In the gVCF output format highlighted above, I show 3 lines.
+Can you understand why \texttt{GATK} decides to go to the next line in that manner?
+A key tip comes from the command below. Can you see where these options come from in the gVCF file, what they mean, and how this relates to the new lines in the gVCF format?
+
+<<blocks, engine = 'bash'>>=
+grep GVCFBlock results/HG00254.mapped.ILLUMINA.bwa.GBR.exome.20121211.gvcf
+@ 
+
+<<tips2, tidy = TRUE, echo = echo, results = results>>=
+#Note the GQ value that changes from one block to the next at each line of the gVCF file.
+##This is what defines the presence of new lines, i.e. the level of compression essentially.
+@
+
+\noindent
+{\bf Exercise:} An badly intentioned colleague, jealous of your rapid progress with bioinformatics tools, has sabotaged your \texttt{GATK} script by adding two subtle errors that prevent the script from running. 
+The script name is  \texttt{multi\_sample\_calling\_GATK\_HC\_step2\_buggy.sh}. Can you understand what these two errors are and debug the script?
+<<tips1, tidy = TRUE, echo = echo, results = results>>=
+#Error 1: an additional space has been added after a new line sign, which breaks the GATL scripts.
+#Error 2: the file containing the gVCF files has been modified and does not have a .list extension anymore, which confuses GATK.
+@
 
 
 \clearpage
