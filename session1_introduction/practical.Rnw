@@ -158,9 +158,8 @@ plot (x = 1:length(ave.qual),
 
 Start by identifying a working instance of the Galaxy server from this \href{https://wiki.galaxyproject.org/PublicGalaxyServers}{location}.
 There are multiple choices here, so feel free to experiment.
-In case of doubt, I propose that you use the \href{https://usegalaxy.org/}{main Galaxy instance}.
-However, I have used the following: \href{http://biominavm-galaxy.biomina.be/galaxy/}{http://biominavm-galaxy.biomina.be/galaxy/}, and it worked for me.
-However, be ready for small and subtle differences and be flexible.
+In case of doubt, I propose that you use the \href{https://usegalaxy.org/}{main Galaxy instance} which I know works for the purpose of this exercise.
+However, you can try different options but be ready for small and subtle differences and be flexible associated with different versions of the software.
 
 \noindent
 {\bf Exercise:} Create an account on one of these Galaxy servers and upload the pair of fastq {\it fastq2\_1.txt} and {\it fastq2\_2.txt}.
@@ -190,7 +189,7 @@ You should be able to run something like the command below, after changing the p
 
 <<pear, engine = 'bash', eval = FALSE>>=
 bin/pear-0.9.4-64 -e -v 10 \
-   -f ../data/fastq_for_merging/reads1.fq -r ../data/fastq_for_merging/reads1.fq -o results/merged -c 40
+   -f ../data/fastq_for_merging/reads1.fq -r ../data/fastq_for_merging/reads2.fq -o results/merged -c 40
 @
 
 Check what the output looks like, in particular the read length of the assembled reads. 
@@ -243,7 +242,7 @@ samtools index results/BRCA1_HG00118.bam
 \item Still using \texttt{samtools view}, subset the BAM file for the first coding exon (not the UTR) of {\it BRCA1}  (use transcript ENST00000357654 from Ensembl) and output in SAM format.
 <<exon1, engine = 'bash', echo = echo, results = results>>=
 ## the line of code below should create that SAM file
-samtools view results/BRCA1_HG00118.bam 17:43124115-43124017  > results/BRCA1_exon1.sam
+samtools view results/BRCA1_HG00118.bam 17:41276132-41276034  > results/BRCA1_exon1.sam
 @ 
 \item Exercise: What do these lines do?
 <<view.2, engine = 'bash', eval = FALSE>>=
@@ -266,10 +265,10 @@ Key information about a BAM file can be obtained from the headers.
 \texttt{Samtools} is once again the key tool to read these data.
 You can view these headers using:
 <<headers, engine = 'bash'>>=
-samtools view -H BRCA1_HG00118.bam > headers.txt
+samtools view -H results/BRCA1_HG00118.bam > results/headers.txt
 @ 
 <<headers.2, engine = 'bash', eval = FALSE>>=
-less -S headers.txt
+less -S results/headers.txt
 @ 
 
 \noindent
