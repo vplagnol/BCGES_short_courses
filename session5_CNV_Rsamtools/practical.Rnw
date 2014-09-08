@@ -6,6 +6,11 @@
 \date{}
 \author{Vincent Plagnol}
 
+
+%%% add bit about variant filtering, hard filtering or not
+%% read depth analysis?
+%% tabix?
+
 \begin{document}
 
 \maketitle
@@ -68,12 +73,60 @@ ls -ltrh $CRAM $BAM
 
 
 \subsection{Tabix indexing of position sorted files (20 minutes)}
-TO BE WRITTEN
+The indexing technology used for the BAM format relies on the fact that the rows of a BAM file are indexed by chromosome and position.
+The same can be said of a VCF file for example. And as a consequence the same sort of tools can be used to index these files.
+A first place to look is the \texttt{tabix} \href{http://samtools.sourceforge.net/tabix.shtml}{man page}, which highlights some of the ways \texttt{tabix} can be used.
 
 
+Here is a basic example on a VCF file that you created in an earlier session.
+<<tabix.vcf, engine = 'bash'>>= 
+bgzip  -c ../session4_multi_sample_calling_annotation/results/GATK_msamplecalling_HC.vcf > results/GATK_msamplecalling_HC.vcf.gz
+tabix -p vcf -s 1 -b 2 -e 2 results/GATK_msamplecalling_HC.vcf.gz
+
+ls -ltrh results/GATK_msamplecalling_HC.vcf.gz*
+
+tabix results/GATK_msamplecalling_HC.vcf.gz 21:43866166-43866166
+@
+
+\noindent
+{\bf Exercise:} \texttt{tabix} may need to tweak some options to work with different files formats.
+The \texttt{R} code below creates a large comma separated file, with chromosome and position (two chromosomes, both 1 Mb long).
+Can you index the file and use \texttt{tabix} to retrieve the rows overlapping positions 1:100000-120000.
+
+<<create.large.file, results = 'hide', tidy = TRUE>>=
+nrows <- 10000
+chromosomes <- c(rep('chr1', times = 50000) ,rep('chr2', 50000))
+start <- c(sort(sample(x = 10^6, size = 50000, replace = FALSE)), sort(sample(x = 10^6, size = 50000, replace = FALSE)))
+end <- c(sort(sample(x = 10^6, size = 50000, replace = FALSE)), sort(sample(x = 10^6, size = 50000, replace = FALSE))) + sample(x = 1000, size = 100000, replace = TRUE)
+random.number <- runif(10^5)
+my.data <- data.frame(start = start, end = end, chromosome = chromosomes,
+                      very.important.number = random.number)
+write.table(x = my.data, file = 'results/large_data_file.tab',
+            quote = FALSE, col.names = TRUE, row.names = FALSE, sep = '\t')
+@ 
+
+<<tabix.sol, echo = echo, results = results, engine = 'bash'>>=
+##Here is how I propose to to do this
+bgzip -c results/large_data_file.tab > results/large_data_file.tab.gz  ##zipping
+tabix -s 3 -b 1 -e 2 -S 1 results/large_data_file.tab.gz ##indexing
+tabix results/large_data_file.tab.gz  chr1:100000-120000 > results/retrieved_data.tab ##retrieving
+@ 
+  
+
+\noindent
+{\bf Exercise:} Another useful feature of \texttt{tabix} is that it also works on the web. Let us illustrate this with a simple example.
+Find the location of the latest 1KG VCF data, and retrieve all the variants located around the {\it BRCA1} gene.
+<<tabix.sol2, echo = echo, results = results, engine = 'bash'>>=
+filename=ALL.autosomes.phase3_shapeit2_mvncall_integrated_v4.20130502.sites.vcf.gz
+link=ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/release/20130502/$filename
+
+##note that the -f option is required here, otherwise the code complains
+tabix -f $link 17:41243452-41277500 > results/1KG_BRCA1.vcf  
+@ 
+  
 %%%%%%%%%%%%%%%%%%%%%%%
 \clearpage
-\section{Some examples PICARD tools (40 minutes)}
+\section{Some examples PICARD tools (50 minutes)}
 
 \subsection{Marking duplicates}
 
@@ -280,15 +333,20 @@ samtools view file.bam  | awk '{if (($9 > 15000) && ($9 < 25000)) print}' | less
 {\bf (Optional) Exercise:} Can you write a R script (using \texttt{Rsamtools}) to identify these reads?
 
 
-\end{document}
 
 %%%%%%%%%%%%%%%%%%%%%%
 \clearpage
 \section{Read depth analysis to detect CNVs (30 minutes)}
 
-Run the example code provided in \texttt{exomeDepth\_example.R}.
+Another useful way to detect CNVs is read depth based analysis.
+This is a non straightforward analysis, and results can vary greatly between one dataset and the next.
+Hence, this part of the class is located at the end and can be skipped if there is not enough time.
+Nevertheless, it is a good idea to understand what this does and how to run an analysis like this one.
+To do so, look and run the example code provided in \texttt{exomeDepth\_example.R}.
 Familiarise yourself with the code, modify it to run with the sample \texttt{UCLG\_94\_sorted\_unique.bam}. 
 You should be able to see a two exon heterozygous deletion located in the gene {\it GATA2}, which is causal in this individual.
+The code is listed below as well, but not executed on the fly as part of the document because it takes a bit long to do so.
+But there should be time to discuss what this does in class.
 
 <<exomeDepth, message = FALSE, eval= FALSE>>=
 library(ExomeDepth)
