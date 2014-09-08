@@ -50,6 +50,7 @@ List of requirements:
 - vcftools
 - picard tools
 - bedtools
+- pdflatex
 
 R packages:
 - knitr
