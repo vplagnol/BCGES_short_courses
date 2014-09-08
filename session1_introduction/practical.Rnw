@@ -17,7 +17,7 @@
 <<setup, results = 'hide', echo = FALSE>>=
 if (!exists('forStudents')) forStudents <- TRUE  ##default is to print the student version
 if (!forStudents) {echo <- TRUE; results <- 'markup'; fig.show <- 'asis'} else {results <- 'hide'; echo  <- FALSE; fig.show <- 'hide';}
-options(tidy=TRUE, width=80)
+options(tidy=TRUE, width=100)
 @
 
 The aim of this first session is to introduce the tools that we will use to manipulate sequence data.
@@ -47,12 +47,12 @@ Some of these files can be compressed and/or indexed to enable quicker access.
 The first esstential step is to be confortable with reading/compressing/uncompressing various text files.
 
 <<head, engine='bash'>>=
-head ../../data/fastq_files/fastq1_1.txt
+head ../data/fastq_files/fastq1_1.txt
 @ 
 
 
 <<tail, engine='bash'>>=
-tail ../../data/fastq_files/fastq1_1.txt
+tail ../data/fastq_files/fastq1_1.txt
 @ 
 
 If you need more information, shell scripts have useful manual page that can be accessed using the \texttt{man} command.
@@ -180,29 +180,6 @@ Run the \texttt{fastqc} code on these files (note that a standalone version also
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \clearpage
-\section{Merging overlapping paired reads reads (20 minutes)}
-
-Another useful thing to be aware of is the possibility to merge read pairs that overlap in the middle.
-This happens when the combined length of both reads exceeds the length of the DNA fragment they originate from.
-A review of tools to perform this task is available \href{http://thegenomefactory.blogspot.de/2012/11/tools-to-merge-overlapping-paired-end.html}{here}.
-I propose here to have a look at the program \href{http://sco.h-its.org/exelixis/web/software/pear/doc.html}{PEAR}, which has been useful for the applications I had in mind.
-Start by downloading the pre-compiled binary to your own computer (this program is not preinstalled).
-You should be able to run something like the command below, after changing the path to the appropriate location of the executable:
-
-<<pear, engine = 'bash', eval = FALSE>>=
-bin/pear-0.9.4-64 -e -v 10 \
-   -f ../data/fastq_for_merging/reads1.fq -r ../data/fastq_for_merging/reads2.fq -o results/merged -c 40
-@
-
-Check what the output looks like, in particular the read length of the assembled reads. 
-Have a look at the options that PEAR uses, and see how the choice of the \texttt{v} argument affects the final results.
-
-\noindent
-{\bf Warning:} Note that PEAR requires that you know which of the reads are forward and reverse, which is probably not the case for a fastq file that is not stranded or that has been processed. So be a bit careful before running this code on a generic fastq.
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\clearpage
 \section{Reading and manipulating BAM files (about 1.5h)}
 BAM files are compressed files that contain the information from the FASTQ files, plus additional information about the location where the reads map.
 A key feature of the BAM files is that they can be indexed, i.e. an associated file contains information about where each of the reads are located in the file.
@@ -228,11 +205,16 @@ wget -O results/1KG_index.tab ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/exome.ali
 @ 
 \item Using \texttt{samtools view} over the web, download the {\it BRCA1} reads for the sample \texttt{HG00118}.
   You will first need to find where that file is located on the web, using the index you just downloaded.
-  Make sure that your output is in BAM format.
-<<view, engine = 'bash', echo = echo, results = results>>=
+  Make sure that your output is in BAM format. \\ \noindent
+{\bf Note:} This step may seem difficult at first so the resulting BAM file should be available by default as part of the github set of files. You will also need the address of the 1KG ftp site: \texttt{ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp}.
+
+<<view, engine = 'bash', echo = echo, results = results, tidy = TRUE>>=
 ##first I grep the index file to find the filename
 grep HG00118 results/1KG_index.tab  | grep HG00118.mapped.ILLUMINA | awk '{print $1}'
-BAM=ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data/HG00118/exome_alignment/HG00118.mapped.ILLUMINA.bwa.GBR.exome.20130415.bam
+##Now I repeat the line above but put the output in the variable fileName
+fileName=`grep HG00118 results/1KG_index.tab  | grep HG00118.mapped.ILLUMINA | awk '{print $1}'`
+### Now I add to this the location of the ftp server
+BAM=ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/${fileName}
 ##Then samtools view, note the -b option to generate a BAM output
 samtools view -b -o results/BRCA1_HG00118.bam $BAM 17:41243452-41277500
 @ 
@@ -247,10 +229,10 @@ samtools index results/BRCA1_HG00118.bam
 samtools view results/BRCA1_HG00118.bam 17:41276132-41276034  > results/BRCA1_exon1.sam
 @ 
 \item Exercise: What do these lines do?
-<<view.2, engine = 'bash', eval = FALSE>>=
-samtools view -f 0x0002 results/BRCA1_HG00118.bam
-samtools view -F 0x0002 results/BRCA1_HG00118.bam
-samtools view -F 0x0040 results/BRCA1_HG00118.bam
+<<view.2, engine = 'bash', eval = TRUE>>=
+samtools view -f 0x0002 results/BRCA1_HG00118.bam | wc -l
+samtools view -F 0x0002 results/BRCA1_HG00118.bam | wc -l
+samtools view -F 0x0040 results/BRCA1_HG00118.bam | wc -l
 @ 
 <<view.tips, engine = 'bash', eval = FALSE, results = results, echo = echo>>=
 ## Some short comments for each line below
@@ -291,18 +273,41 @@ We will be using these tools later on in the CNV analysis section.
 library(Rsamtools)
 library(GenomicRanges)
 
-which <- GRanges(seqnames=Rle('21'),
+which <- GRanges(seqnames=Rle("21"),
                  IRanges(start = 43000000, end = 45000000))
 
 what <- c("rname", "strand", "pos", "qwidth", "seq")
 param <- ScanBamParam(which=which, what=what)
 
-bam.reads <- scanBam(file = '../data/BAM_files/HG00251.mapped.ILLUMINA.bwa.GBR.exome.20121211.bam',
+bam.reads <- scanBam(file = "../data/BAM_files/HG00251.mapped.ILLUMINA.bwa.GBR.exome.20121211.bam",
                      param=param)
 names(bam.reads[[1]])
 head(bam.reads[[1]]$pos)
 @ 
 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\section{Merging overlapping paired-end reads (20 minutes)}
+
+Another useful thing to be aware of is the possibility to merge read pairs that overlap in the middle.
+This happens when the combined length of both reads exceeds the length of the DNA fragment they originate from.
+A review of tools to perform this task is available \href{http://thegenomefactory.blogspot.de/2012/11/tools-to-merge-overlapping-paired-end.html}{here}.
+I propose here to have a look at the program \href{http://sco.h-its.org/exelixis/web/software/pear/doc.html}{PEAR}, which has been useful for the applications I had in mind.
+Start by downloading the pre-compiled binary to your own computer (this program is not preinstalled).
+You should be able to run something like the command below, after changing the path to the appropriate location of the executable:
+
+<<pear, engine = 'bash', eval = FALSE>>=
+bin/pear-0.9.4-64 -e -v 10 \
+   -f ../data/fastq_for_merging/reads1.fq -r ../data/fastq_for_merging/reads2.fq -o results/merged -c 40
+@
+
+Check what the output looks like, in particular the read length of the assembled reads. 
+Have a look at the options that PEAR uses, and see how the choice of the \texttt{v} argument affects the final results.
+
+\noindent
+{\bf Warning:} Note that PEAR requires that you know which of the reads are forward and reverse, which is probably not the case for a fastq file that is not stranded or that has been processed. So be a bit careful before running this code on a generic fastq.
 
 
 
