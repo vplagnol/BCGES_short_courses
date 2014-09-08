@@ -4,7 +4,7 @@
 
 \title{BCGES short courses, session 7 \newline RNA-Seq}
 \date{}
-\author{}
+\author{Vincent Plagnol}
 
 \begin{document}
 %\SweaveOpts{concordance=TRUE}
@@ -20,5 +20,102 @@ options(tidy=TRUE, width=80)
 @
 
 
+\section{GTF format to store information about genes}
 
+\subsection{Ensembl data}
+
+If one works with genes and exons, it is important to have a format that captures this information.
+The file format that does this is the GTF format.
+A good place to download GTF file is the \href{Ensembl web page}{http://www.ensembl.org/info/data/ftp/index.html}.
+One can start by using the \texttt{curl} function (which is a combination of \texttt{cat} and \texttt{url}) to obtain the first few lines of an example GTF file.
+
+<<gtf.download, engine = 'bash', tidy = TRUE>>=
+curl --silent ftp://ftp.ensembl.org/pub/release-76/gtf/homo_sapiens/Homo_sapiens.GRCh38.76.gtf.gz | \
+   zcat | head -100 > results/human_gtf_example.gtf
+@ 
+
+\noindent
+{\bf Exercise:} Go over the GTF format and understand what the fields mean, and how the data are organised.
+
+You can now download the full ensembl file to get an idea of the size of the file.
+We will use the wget function that was used before in these practicals (note that the code below is not executed, because too long to go through).
+<<wget, engine = 'bash', eval = FALSE>>=
+wget -O results/ensembl_human_GRCh38.gtf.gz \
+   ftp://ftp.ensembl.org/pub/release-76/gtf/homo_sapiens/Homo_sapiens.GRCh38.76.gtf.gz
+@ 
+
+
+%%%%%%%%%%%%%%%
+\subsection{UCSC data}
+
+UCSC is the other obvious place to obtain genome-scale data.
+The webpage you want to become familiar with is \href{https://genome.ucsc.edu/cgi-bin/hgTables?command=start}{this one}.
+
+\noindent
+{\bf Exercise:} Look for a human GTF file generally equivalent to the one you just downloaded from UCSC.
+Compare the sizes of both files, look for differences and similarities.
+<<tips1, results = results, echo = echo>>=
+#You want to set the group option \textt{mRNA and EST}.
+#Use the Human mRNA track
+#In output format select \texttt{GTF - gene transfer format}
+#Specify a name in the output file
+#Maybe request a compressed file to limit transfer time
+#Compressed the UCSC GTF is ... and the compressed Ensembl one is 16M.
+@ 
+
+
+
+%%%%%%%%%%%%%%%%%
+\section{Aligning RNA-Seq data}
+
+
+%%%%%%%%%%%%%%%%%
+\section{Library normalization choices}
+
+%%%%%%%%%%%%%%%%%
+\section{Differential expression analysis}
+
+We start by loading the DESeq package as well as an example dataset from a mouse brain RNA-Seq experiment.
+<<<deseq>>=
+library(DESeq)
+load("../data/RNASeq/deseq_counts_TDP43.RData")
+head(genes.counts)
+@ 
+
+We can now define the model for the differential expression analysis:
+<<model>>=
+formula1 <- count ~ condition
+formula0 <- count ~ 1
+design.deseq <- c('control', 'control', 'control', 'control', 'KD', 'KD', 'KD', 'KD')
+@
+
+And now the computations can properly start.
+Note that these steps are very long, and therefore the code is not executed as part of this file (to be more precise, it is executed once, and the output is saved).
+<<estimate, eval = TRUE>>=
+CDS <- newCountDataSet(genes.counts, condition = design.deseq)
+
+CDS <- estimateSizeFactors(CDS)
+CDS <- estimateDispersions(CDS, method = 'pooled')
+
+fit0 <- fitNbinomGLMs( CDS, formula0 )
+fit1 <- fitNbinomGLMs( CDS, formula1 )
+
+deseq.pval <- fit1
+deseq.pval$EnsemblID <- row.names( deseq.pval)
+deseq.pval$basic.pval <- signif(nbinomGLMTest( fit1, fit0 ), 4)
+save(list = 'deseq.pval', file = 'results/DE_pvalues_ranked.RData')
+@ 
+
+
+See below some polishing: a multiple testing/false discovery rate Bonferroni-Hochberg analysis, and the ordering of the results by significance of P-values.
+<<mtesting>>=
+load('results/DE_pvalues_ranked.RData')
+deseq.pval$adj.pval <- signif(p.adjust( deseq.pval$basic.pval, method="BH" ), 4)
+
+deseq.pval <- deseq.pval[ order(deseq.pval$basic.pval, decreasing = FALSE), ]
+head(deseq.pval)
+@
+
+
+  
 \end{document}

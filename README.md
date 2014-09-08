@@ -33,3 +33,23 @@ sudo apt-get install texlive
 install.packages("knitr")
 
 then a "make" command in each session should run the code and update the pdf files.
+
+
+
+---------
+
+List of requirements:
+- bwa 
+- tophat
+- GATK version > 3.1
+- java version > 1.7
+- samtools, ideally version > 1.0
+- cufflinks
+
+R packages:
+- knitr
+- DEseq
+- DEXSeq
+- Rsamtools
+- ExomeDepth
+- ShortRead
