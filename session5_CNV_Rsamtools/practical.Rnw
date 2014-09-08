@@ -1,6 +1,6 @@
 \documentclass[a4paper]{article}
-\usepackage{fullpage}
-%\usepackage[margin=1.5cm,includefoot,footskip=30pt]{geometry}
+%\usepackage{fullpage}
+\usepackage[margin=1.5cm,includefoot,footskip=30pt]{geometry}
 \usepackage[colorlinks=true]{hyperref}
 
 \title{BCGES short courses, session 5: Picard tools, CNV analysis, BEDtools}
@@ -281,7 +281,7 @@ This originated from the following question, asked on Twitter:
 See the example below:
 
 <<bedtools.fancy, engine = 'bash'>>=
-BAM=../data/BAM <- files/HG00130.mapped.ILLUMINA.bwa.GBR.exome.20130415.bam
+BAM=../data/BAM_files/HG00130.mapped.ILLUMINA.bwa.GBR.exome.20130415.bam
 regions=tables/UBASH3A.bed
 bedtools genomecov -ibam $BAM -bga \
          | awk '$4==0' | bedtools intersect -a $regions -b - > results/not_covered.bed
