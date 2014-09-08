@@ -39,12 +39,17 @@ then a "make" command in each session should run the code and update the pdf fil
 ---------
 
 List of requirements:
+- R version > 3.1
 - bwa 
 - tophat
 - GATK version > 3.1
 - java version > 1.7
 - samtools, ideally version > 1.0
 - cufflinks
+- IGV
+- vcftools
+- picard tools
+- bedtools
 
 R packages:
 - knitr

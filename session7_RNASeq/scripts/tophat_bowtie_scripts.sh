@@ -11,13 +11,13 @@ export PYTHONPATH=/cluster/project4/vyp/vincent/libraries/python/share/apps/pyth
 #### build index
 bowtie2-build -f ../data/RNASeq/chr12_short.fa ../data/RNASeq/chr12_short
 
-mkdir tophat_output tophat_output_no_gtf cufflinks_output results
+mkdir results/tophat_output results/tophat_output_no_gtf results/cufflinks_output
 
 f1=../data/RNASeq/reads_1.fq.gz
 f2=../data/RNASeq/reads_2.fq.gz
 
-tophat --no-coverage-search -o tophat_output -r 220 --library-type fr-unstranded --segment-length 30 -G ../data/RNASeq/chr12_short.gtf ../data/RNASeq/chr12_short ${f1} ${f2}
-cufflinks  -o cufflinks_output --GTF ../data/RNASeq/chr12_short.gtf tophat_output/accepted_hits.bam
+tophat --no-coverage-search -o results/tophat_output -r 220 --library-type fr-unstranded --segment-length 30 -G ../data/RNASeq/chr12_short.gtf ../data/RNASeq/chr12_short ${f1} ${f2}
+cufflinks  -o results/cufflinks_output --GTF ../data/RNASeq/chr12_short.gtf results/tophat_output/accepted_hits.bam
 
 ####extract introns
 samtools index tophat_output/accepted_hits.bam
@@ -25,6 +25,6 @@ samtools view  tophat_output/accepted_hits.bam 12:2055213-2113677 | awk '{if ($6
 
 
 ##### now without the GTF
-tophat --no-coverage-search -o tophat_output_no_gtf -r 220 --library-type fr-unstranded --segment-length 30 ../data/RNASeq/chr12_short ${f1} ${f2}
-samtools index tophat_output_no_gtf/accepted_hits.bam
-samtools view  tophat_output_no_gtf/accepted_hits.bam 12:2055213-2113677 | awk '{if ($6 ~ /N/ ) {print;}}' | ./scripts/get_introns.pl | awk '{print $4"_"$5}'| sort | uniq -c > results/DCP1B_no_gtf.tab
+tophat --no-coverage-search -o results/tophat_output_no_gtf -r 220 --library-type fr-unstranded --segment-length 30 ../data/RNASeq/chr12_short ${f1} ${f2}
+samtools index results/tophat_output_no_gtf/accepted_hits.bam
+samtools view  results/tophat_output_no_gtf/accepted_hits.bam 12:2055213-2113677 | awk '{if ($6 ~ /N/ ) {print;}}' | ./scripts/get_introns.pl | awk '{print $4"_"$5}'| sort | uniq -c > results/DCP1B_no_gtf.tab

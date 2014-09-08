@@ -2,7 +2,7 @@
 \usepackage[colorlinks=true]{hyperref}
 \usepackage[margin=1.5cm,includefoot,footskip=30pt]{geometry}
 
-\title{BCGES short courses, session 7 \newline RNA-Seq}
+\title{BCGES short courses, session 7, transcriptome sequencing (RNA-Seq)}
 \date{}
 \author{Vincent Plagnol}
 
@@ -11,7 +11,7 @@
 %knit('practical.Rnw'); system('pdflatex practical')
 
 \maketitle
-
+\tableofcontents
 
 <<setup, results = 'hide', echo = FALSE>>=
 if (!exists('forStudents')) forStudents <- TRUE  ##default is to print the student version
@@ -19,8 +19,9 @@ if (!forStudents) {echo <- TRUE; results <- 'markup'; fig.show <- 'asis'} else {
 options(tidy=TRUE, width=80)
 @
 
+\clearpage
 
-\section{GTF format to store information about genes}
+\section{GTF format to store information gene-centric information (20 minutes)}
 
 \subsection{Ensembl data}
 
@@ -64,19 +65,62 @@ Compare the sizes of both files, look for differences and similarities.
 @ 
 
 
+%%%%%%%%%%%%%%%%%
+\clearpage
+\section{Library normalization choices (30 minutes)}
 
 %%%%%%%%%%%%%%%%%
-\section{Aligning RNA-Seq data}
+\clearpage
+\section{Aligning RNA-Seq data and estimating gene expression levels (45 minutes)}
+
+Aligning short-read RNA-Seq data is not fundamentally different from aligning DNA sequencing data.
+It is however made more complex by the presence of introns, which can create reads or paired-reads spanning large distances.
+A popular aligner for RNA-Seq data is \texttt{tophat} and we will go over some basic commands.
+
+\subsection{Aligning with \texttt{tophat} and \texttt{bowtie}}
+
+It is important to note that the underlying alignment engine for \texttt{tophat} is \texttt{bowtie}, hence many commands are shared with standard calls to \texttt{bowtie}. We start by building a \texttt{bowtie} index for a short portion of chromosome 12, which we will use as an example for this class.
+Before you go through these steps, execute the script  \texttt{scripts/tophat\_bowtie\_scripts.sh}.
+It will generate all the output files we want to look into, and the following goes through these commands in more details.
+
+<<index, engine = 'bash', eval = FALSE>>=
+bowtie2-build -f ../data/RNASeq/chr12_short.fa ../data/RNASeq/chr12_short
+@ 
+
+With this, we can now perform the alignment step. But we first create some output folders to store all the output files:
+<<mkdir.1, engine = 'bash'>>=
+mkdir results/tophat_output
+@ 
+
+Now we can start working with the fastq files:
+<< fastq, engine = 'bash', eval = FALSE >>=
+f1=../data/RNASeq/reads_1.fq.gz
+f2=../data/RNASeq/reads_2.fq.gz
+
+tophat --no-coverage-search -o results/tophat_output -r 220 --library-type fr-unstranded \
+      --segment-length 30 -G ../data/RNASeq/chr12_short.gtf ../data/RNASeq/chr12_short ${f1} ${f2}
+@
+
+
+\subsection{\texttt{Cufflinks}}
+
+A popular software often associated with \texttt{tophat} is \texttt{cufflinks}.
+This piece of software is designed to estimate the abundance of each gene (and potentially isoforms).
+A call to \texttt{cufflinks} is pretty straightforward:
+
+<<cufflinks, engine = 'bash', eval = FALSE>>=
+cufflinks  -o results/cufflinks_output --GTF ../data/RNASeq/chr12_short.gtf \
+   results/tophat_output/accepted_hits.bam
+@ 
+
 
 
 %%%%%%%%%%%%%%%%%
-\section{Library normalization choices}
-
-%%%%%%%%%%%%%%%%%
-\section{Differential expression analysis}
+\clearpage
+\section{Differential expression analysis (30 minutes)}
 
 We start by loading the DESeq package as well as an example dataset from a mouse brain RNA-Seq experiment.
-<<<deseq>>=
+<<<deseq, message = FALSE>>=
 library(DESeq)
 load("../data/RNASeq/deseq_counts_TDP43.RData")
 head(genes.counts)
@@ -91,7 +135,7 @@ design.deseq <- c('control', 'control', 'control', 'control', 'KD', 'KD', 'KD', 
 
 And now the computations can properly start.
 Note that these steps are very long, and therefore the code is not executed as part of this file (to be more precise, it is executed once, and the output is saved).
-<<estimate, eval = TRUE>>=
+<<estimate, eval = FALSE>>=
 CDS <- newCountDataSet(genes.counts, condition = design.deseq)
 
 CDS <- estimateSizeFactors(CDS)
