@@ -1,6 +1,8 @@
 \documentclass[a4paper]{article}
 \usepackage[colorlinks=true]{hyperref}
-\usepackage{fullpage}
+%\usepackage{fullpage}
+
+\usepackage[margin=1.5cm,includefoot,footskip=30pt]{geometry}
 
 \title{BCGES short courses, session 1: Introduction, file formats, shell scripting, Galaxy}
 \date{}

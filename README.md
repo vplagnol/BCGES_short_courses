@@ -21,3 +21,15 @@ Session 6, Thursday AM: TC, De novo assembly
 Session 7, Thursday PM: VP and Nick Owen, RNA-Seq differential expression analysis
 
 Session 8, Friday AM:  TC, Population genetics, application, summary
+
+
+--------- Additional instructions
+If you want to be able to compile the Rnw files you need to install 2 things:
+
+- pdflatex is done by running
+sudo apt-get install texline
+
+- package "knitr" in R, start R and run
+install.packages("knitr")
+
+then a "make" command in each session should run the code and update the pdf files.

@@ -1,7 +1,8 @@
 \documentclass[a4paper]{article}
-\usepackage{hyperref,fullpage}
+\usepackage[colorlinks=true]{hyperref}
+\usepackage[margin=1.5cm,includefoot,footskip=30pt]{geometry}
 
-\title{BCGES short courses, session 1 \newline RNA-Seq}
+\title{BCGES short courses, session 7 \newline RNA-Seq}
 \date{}
 \author{}
 
@@ -13,10 +14,10 @@
 
 
 <<setup, results = 'hide', echo = FALSE>>=
-forStudents <- TRUE
-if (!forStudents) show <- 'markup' else show <- 'hide'
+if (!exists('forStudents')) forStudents <- TRUE  ##default is to print the student version
+if (!forStudents) {echo <- TRUE; results <- 'markup'; fig.show <- 'asis'} else {results <- 'hide'; echo  <- FALSE; fig.show <- 'hide';}
+options(tidy=TRUE, width=80)
 @
-
 
 
 
