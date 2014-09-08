@@ -27,7 +27,7 @@ Session 8, Friday AM:  TC, Population genetics, application, summary
 If you want to be able to compile the Rnw files you need to install 2 things:
 
 - pdflatex is done by running
-sudo apt-get install texline
+sudo apt-get install texlive
 
 - package "knitr" in R, start R and run
 install.packages("knitr")
