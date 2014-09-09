@@ -16,7 +16,8 @@
 
 <<setup, results = 'hide', echo = FALSE>>=
 if (!exists('forStudents')) forStudents <- TRUE  ##default is to print the student version
-if (!forStudents) {echo <- TRUE; results <- 'markup'} else {results <- 'hide'; echo  <- FALSE;}
+if (!forStudents) {echo <- TRUE; results <- 'markup'; fig.show <- 'asis'} else {results <- 'hide'; echo  <- FALSE; fig.show <- 'hide';}
+options(tidy=TRUE, width=100)
 @
 
 \tableofcontents
@@ -198,6 +199,18 @@ vcftools --vcf results/UBASH31A_samtools.vcf --minQ 30 --freq --out results/freq
 \noindent
 {\bf Optional exercise:} For the subset of variants present in both \texttt{samtools} and GATK UG output, generate a graph to compare the estimated variant frequencies (using \texttt{R} most likely, but feel free to use something else if you prefer).
 
+<<plot.pretty, fig.show = fig.show, fig.width = 7, fig.height = 7, results = results, echo = echo, tidy = TRUE>>=
+data.samtools <- read.table('results/samtools.frq', skip = 1, col.names = c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'All1', 'All2'))
+data.gatk <- read.table('GATK_UG.frq', skip = 1, col.names = c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'All1', 'All2'))
+
+### now I modify the string that contains the allele, to just keep the frequencies
+data.samtools$frq.sam <- as.numeric(gsub(pattern = '.*:', data.samtools$All2, replacement = ''))
+data.gatk$frq.gatk <- as.numeric(gsub(pattern = '.*:', data.gatk$All2, replacement = ''))
+
+data <- merge(data.samtools, data.gatk, by = 'POS')
+plot(x = data$frq.sam, y = data$frq.gatk, xlab = 'Samtools', ylab = 'GATK')
+abline(coef(lm(data$frq.gatk ~ data$frq.sam)), col = 'red')
+@ 
 
 \clearpage
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
