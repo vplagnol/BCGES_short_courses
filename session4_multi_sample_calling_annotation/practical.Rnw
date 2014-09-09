@@ -51,6 +51,7 @@ samtools faidx human_g1k_v37.fasta
 @
 
 These three steps download the compressed reference, unzip it and generate an index for that file.
+Please save it in your \texttt{data} folder (at the same level as all the ``session'' directories), because my scripts will assume that this is where this file can be found.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -85,7 +86,9 @@ For reasons that will be outlined in the next subsection, GATK has now transitio
 
 The Unified Genotyper (UG) version of the GATK pipeline is implemented in the script called \texttt{multi\_sample\_calling\_GATK\_UG.sh}.
 The key output of this script is the file \texttt{results/GATK\_msamplecalling.vcf}.
-Note that GATK reorders the samples by alphabetical order, so the order may not match what was specified in the input BAM list, and it may also not match the VCF output of \texttt{samtools}.
+Note that GATK sorts the samples by alphabetical order, so the order may not match what was specified in the input BAM list, and it may also not match the VCF output of \texttt{samtools}.
+However, one important details about these scripts: for these to run on my computer, I had to specify the path to the GATK java file.
+You will need to do the same thing, and replace my path with \texttt{/usr/local/gatk/GenomeAnalysisTK.jar}. Similarly, the path to the fasta file of the human genome may need to be updated. My scripts assume that you save this file in the \texttt{data} folder.
 
 \noindent
 {\bf Exercise:} As for the \texttt{samtools} subsection, make sure you can run these scripts, tweak them a bit and understand the options that I used. 
