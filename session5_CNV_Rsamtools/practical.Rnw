@@ -327,10 +327,15 @@ Low coverage whole genome data for the 1KG sample HG00123 will do the job.
 How would you filter pairs of reads that span over the deletion in this sample?
 
 
-<<download, eval = FALSE, engine = 'bash', results = results, echo = echo>>=
-BAM=//ftp.1000genomes.ebi.ac.uk/vol1/ftp/data/HG00123/alignment/HG00123.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam
-samtools view -b ftp:$BAM 5:150200000-150225000 > file.bam
-samtools view file.bam  | awk '{if (($9 > 15000) && ($9 < 25000)) print}' | less -S
+<<download, eval = FALSE, engine = 'bash', results = results, echo = echo, tidy = TRUE>>=
+###filename below
+fileName=data/HG00123/alignment/HG00123.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam
+### now I add the address of the ftp site
+BAM=ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/${fileName}
+### and I use samtools to extract the reads I need
+### note that the output file should be in your results folder, so you may skip this download step if it slows you down
+samtools view -b $BAM 5:150200000-150225000 > results/HG00123.bam
+samtools view results/HG00123.bam  | awk '{if (($9 > 15000) && ($9 < 25000)) print}' | less -S
 @
 
 \noindent
@@ -338,7 +343,25 @@ samtools view file.bam  | awk '{if (($9 > 15000) && ($9 < 25000)) print}' | less
 {\bf (Optional) Exercise:} Can you write a R script (using \texttt{Rsamtools}) to identify these reads?
 
 
+<<index, echo=echo, results = results, engine = 'bash'>>=
+##first thing first we index the output file, because we need this for Rsamtools to do the job
+samtools index results/HG00123.bam  
+@
+<<Rsamtools, message = FALSE, echo = echo, results = results>>=
+library(Rsamtools)
+which <- GRanges(seqnames=Rle("5"),
+                 IRanges(start = 150200000, end = 150225000))
 
+what <- c("qname", "pos", "mpos", "isize")
+param <- ScanBamParam(which=which, what=what)
+
+bam.reads <- scanBam(file = "results/HG00123.bam",
+                     param=param)
+
+bam.reads[[1]]$isize[ which( abs(bam.reads[[1]]$isize) > 20000) ]
+bam.reads[[1]]$qname[ which( abs(bam.reads[[1]]$isize) > 20000) ]
+
+@
 %%%%%%%%%%%%%%%%%%%%%%
 \clearpage
 \section{Read depth analysis to detect CNVs (30 minutes)}
