@@ -67,7 +67,80 @@ Compare the sizes of both files, look for differences and similarities.
 
 %%%%%%%%%%%%%%%%%
 \clearpage
-\section{Library normalization choices (30 minutes)}
+\section{Library normalization choices (40 minutes)}
+
+\subsection{A toy example}
+
+A key issue for RNA-Seq data is normalization: how do you compare two RNA-Seq datasets generated at two different time points?
+One popular choice is RPKM which stands for reads per kb and per Million reads.
+The recipe is simple: divide by the total number of reads, divide by the length of the gene, and multiply by a number (one million, which is what M stands for) to get a number that is not too small.
+However, this may not be quite what you want. Indeed, we will know look at an example that illustrates the limitations of this measurement.
+Our dataset will be very basic (the code below is \texttt{R} code):
+
+<<example.data>>=
+##let us assume that all genes have the same length, to put this problem aside for now
+read.data <- data.frame (sample1 = 100, sample2 = c(rep(143, 70), rep(0, 30)))
+## so one sample has all genes at level 100
+##another has more reads for 70 genes and no read for the other 30
+@
+
+{\bf Exercise:} Setting aside the gene length question, how would you compute RPKM values in this case?
+To get numbers easier to manipulate, let us rather us the number of reads per 1,000.
+How do you look into these RPKM values? Do they match what you would see as the intuitive explanation for these data?
+
+<<RPKM, results = results, echo = echo, tidy = TRUE>>=
+RPKM.sample1 <- read.data$sample1 / sum(read.data$sample1) * 1000
+RPKM.sample2 <- read.data$sample2 / sum(read.data$sample2) * 1000
+table(RPKM.sample1)
+table(RPKM.sample2)
+## the tables above indicate that for sample1, all genes have the same level of expression (which happens to be 10).
+## However for sample 2, 70 genes have a 14, and 30 genes have a 0 value.
+## I don't think this matches the intuition we should have in this case.
+##It seems to me that in that case one would rather conclude that 30 genes are not expressed in sample2, but that the other genes are pretty much on the same level.
+@
+
+So now what to do, and how to interpret the data.
+Here is an \href{http://seqanswers.com/forums/showpost.php?p=16468&postcount=13}{interesting forum answer} that recapitulates the problem.
+I copy paste below the explanation:
+
+\noindent
+To estimate the library size, simply taking the total number of (mapped or unmapped) reads is, in our experience, not a good idea.
+Sometimes, a few very strongly expressed genes are differentially expressed, and as they make up a good part of the total counts, they skew this number. After you divide by total counts, these few strongly expressed genes become equal, and the whole rest looks differentially expressed. The following simple alternative works much better:
+\begin{itemize}
+\item Construct a "reference sample" by taking, for each gene, the geometric mean of the counts in all samples.
+\item To get the sequencing depth of a sample relative to the reference, calculate for each gene the quotient of the counts in your sample divided by the counts of the reference sample. Now you have, for each gene, an estimate of the depth ratio.
+\item Simply take the median of all the quotients to get the relative depth of the library.
+\end{itemize}
+This is what the 'estimateSizeFactors' function of our DESeq package does.
+
+This answer summarizes the problem well. One can see that in our case the 30 genes with 0 read have a large effect on the overall expression measurements that is probably not warranted.
+We will use the \texttt{DESeq} package to address this issue. 
+
+\noindent
+{\bf Exercise:}
+There are three functions that you need to estimate the size factors in \texttt{DESeq} based on the dataset above. 
+One is \texttt{newCountDataSet} to create a new object that \texttt{DESeq} can manipulate.
+The other two functions are: \texttt{estimateSizeFactors} and \texttt{sizeFactors} (the latter extracts the size factors from a \texttt{DESeq} object).
+Using these two functions (and starting with loading the \texttt{DESeq} library), can you compute the size factors, normalize the data using these, and get new gene level estimates of expression? Is the result now more consistent with your intutive interpretation of the data?
+
+<<deseq.way, results = results, echo = echo, message = FALSE>>=
+### Here is my answer to the question above, in R:
+library(DESeq)
+CDS <- newCountDataSet(read.data[, 1:2], condition = c('sample1', 'sample2'))
+CDS <- estimateSizeFactors(CDS)
+size.factors <- sizeFactors(CDS)
+print(table(read.data$sample1 / size.factors[ 1 ]))
+print(table(read.data$sample2 / size.factors[ 2 ]))
+@ 
+
+\subsection{Further reading on normalization of RNA-Seq data}
+
+The issue of normalization of RNA-Seq data has been of interest to a lot of people.
+You can for example have a read of Lior Pachter's \href{http://liorpachter.wordpress.com/2014/04/30/estimating-number-of-transcripts-from-rna-seq-measurements-and-why-i-believe-in-paywall/}{blog post on the matter}. The blog links to a talk that is probably interesting (though I have not yet seen it).
+
+This \href{http://haroldpimentel.wordpress.com/2014/05/08/what-the-fpkm-a-review-rna-seq-expression-units/}{other blog post} is a good read for the list of available methods, even though I do not think I agree with all the details. In particular the sentence: ``Again, the methods in this section allow for comparison of features with different length WITHIN a sample but not BETWEEN samples'' does not make sense to me. 
+If we normalize, it is exactly to compare data across samples (there is no point otherwise).
+So while there are caveats, as always, I don't think this (rather crucial) statement makes sense.
 
 %%%%%%%%%%%%%%%%%
 \clearpage
@@ -101,6 +174,14 @@ tophat --no-coverage-search -o results/tophat_output -r 220 --library-type fr-un
       --segment-length 30 -G ../data/RNASeq/chr12_short.gtf ../data/RNASeq/chr12_short ${f1} ${f2}
 @
 
+\subsection{Looking at the BAM file}
+
+Can you see what subtle differences can be found in a RNA-Seq BAM file compared to a DNA sequencing BAM file?
+The read extracted below should illustrate this.
+
+<<look.BAM, engine = 'bash'>>=
+samtools view results/tophat_output/accepted_hits.bam  | grep 16M2150N34M > results/odd_read.sam
+@ 
 
 \subsection{\texttt{Cufflinks}}
 

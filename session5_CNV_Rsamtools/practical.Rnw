@@ -81,7 +81,8 @@ A first place to look is the \texttt{tabix} \href{http://samtools.sourceforge.ne
 
 Here is a basic example on a VCF file that you created in an earlier session.
 <<tabix.vcf, engine = 'bash'>>= 
-bgzip  -c ../session4_multi_sample_calling_annotation/results/GATK_msamplecalling_HC.vcf > results/GATK_msamplecalling_HC.vcf.gz
+bgzip  -c ../session4_multi_sample_calling_annotation/results/GATK_msamplecalling_HC.vcf \
+    > results/GATK_msamplecalling_HC.vcf.gz
 tabix -p vcf -s 1 -b 2 -e 2 results/GATK_msamplecalling_HC.vcf.gz
 
 ls -ltrh results/GATK_msamplecalling_HC.vcf.gz*
@@ -100,7 +101,9 @@ chromosomes <- c(rep('chr1', times = 50000) ,rep('chr2', 50000))
 start <- c(sort(sample(x = 10^6, size = 50000, replace = FALSE)), sort(sample(x = 10^6, size = 50000, replace = FALSE)))
 end <- c(sort(sample(x = 10^6, size = 50000, replace = FALSE)), sort(sample(x = 10^6, size = 50000, replace = FALSE))) + sample(x = 1000, size = 100000, replace = TRUE)
 random.number <- runif(10^5)
-my.data <- data.frame(start = start, end = end, chromosome = chromosomes,
+my.data <- data.frame(start = start,
+                      end = end,
+                      chromosome = chromosomes,
                       very.important.number = random.number)
 write.table(x = my.data, file = 'results/large_data_file.tab',
             quote = FALSE, col.names = TRUE, row.names = FALSE, sep = '\t')
@@ -183,7 +186,8 @@ We can try the following, which should remove non-mapped reads:
 BAM=../data/BAM_files/HG00130.mapped.ILLUMINA.bwa.GBR.exome.20130415.bam
 samtools view -f 0x0001 -f 0x0002 -b -o results/only_paired.bam $BAM
 
-java -Xmx4g -jar picard/SamToFastq.jar INPUT=results/only_paired.bam FASTQ=results/read1.fq SECOND_END_FASTQ=results/read2.fq
+java -Xmx4g -jar picard/SamToFastq.jar INPUT=results/only_paired.bam \
+            FASTQ=results/read1.fq SECOND_END_FASTQ=results/read2.fq
 @ 
 
 But it fails again. With only 2 unpaired mates this time, so things are getting better. 
@@ -198,7 +202,8 @@ I could not find a better way to do this than what is shown below:
 
 <<remove.bad.reads, eval = TRUE, engine = 'bash'>>=
 samtools view -h results/only_paired.bam |
-       awk '{if (($1 != "SRR707198.24062323") && ($1 != "SRR707198.20187117")) print}' > results/paired_fixed.sam
+       awk '{if (($1 != "SRR707198.24062323") && ($1 != "SRR707198.20187117")) print}' \
+       > results/paired_fixed.sam
 samtools view -b -S -o results/paired_fixed.bam results/paired_fixed.sam
 @ 
 
@@ -206,12 +211,11 @@ The second line above takes a SAM file input (option -S) and returns a BAM file 
 The resulting file can, at last, be converted into a FASTQ format:
 
 <<fastq.v2, eval = TRUE, engine = 'bash'>>=
-java -Xmx4g -jar picard/SamToFastq.jar INPUT=paired_fixed.bam FASTQ=results/read1.fq  SECOND_END_FASTQ=results/read2.fq
+java -Xmx4g -jar picard/SamToFastq.jar INPUT=paired_fixed.bam FASTQ=results/read1.fq  \
+            SECOND_END_FASTQ=results/read2.fq
 @
 
 {\bf Exercise:} Can you find a better way to convert a BAM to fastq? I could not but I have not looked extensively.
-
-
 
 
 
@@ -303,7 +307,7 @@ In this exercice I proposed to look at a well described 20 kb CNV located near t
 We can start by looking at the location of the variant using the data from the Conrad et al paper.
 These are loaded into the ExomeDepth package, so this is one way to access them.
 
-<<IRGM, eval = TRUE>>=
+<<IRGM, eval = TRUE, message = FALSE>>=
 library(ExomeDepth)
 data(Conrad.hg19)
 IRGM <- Conrad.hg19.common.CNVs[ seqnames(Conrad.hg19.common.CNVs) == 5 &
@@ -353,10 +357,10 @@ But there should be time to discuss what this does in class.
 library(ExomeDepth)
 @
 <<exomeDepth.2, message = FALSE, eval = FALSE>>=
-ExomeCount <- read.table('../data/exon_read_count.tab.gz', header = TRUE)
+ExomeCount <- read.table("../data/exon_read_count.tab.gz", header = TRUE)
 my.test <- ExomeCount$UCLG.186_sorted_unique.bam
 all.bams <- grep(pattern = 'bam$', names(ExomeCount), value = TRUE)
-my.ref.samples <- subset( all.bams, all.bams != 'UCLG.186_sorted_unique.bam')
+my.ref.samples <- subset( all.bams, all.bams != "UCLG.186_sorted_unique.bam")
 
 my.reference.set <- as.matrix(ExomeCount[, my.ref.samples])
 
@@ -371,7 +375,7 @@ my.reference.selected <- apply(X = my.matrix,
                                FUN = sum)
 
 ######### create the ExomeDepth object
-all.exons <- new('ExomeDepth',
+all.exons <- new("ExomeDepth",
                  test = my.test,
                  reference = my.reference.selected,
                  formula = 'cbind(test, reference) ~ 1')
@@ -389,7 +393,7 @@ data(Conrad.hg19)
 all.exons <- AnnotateExtra(x = all.exons,
                            reference.annotation = Conrad.hg19.common.CNVs,
                            min.overlap = 0.5,
-                           column.name = 'Conrad.hg19')
+                           column.name = "Conrad.hg19")
 
 data(exons.hg19)
 
@@ -400,7 +404,7 @@ exons.hg19.GRanges <- GRanges(seqnames = exons.hg19$chromosome,
 all.exons <- AnnotateExtra(x = all.exons,
                            reference.annotation = exons.hg19.GRanges,
                            min.overlap = 0.0001,
-                           column.name = 'exons.hg19')
+                           column.name = "exons.hg19")
 
 
 
@@ -412,16 +416,14 @@ my.final.table <- my.final.table[ order(my.final.table$BF, decreasing = TRUE),]
 
 print(table(is.na(my.final.table$Conrad.hg19)))
 
-
 print(head(my.final.table))
 
-
-pdf('LRBA_example.pdf')
+pdf("figure/LRBA_example.pdf")
 plot (all.exons,
-      sequence = '4',
+      sequence = "4",
       xlim = c(151749334 - 100000, 151948710 + 100000),
       count.threshold = 20,
-      main = 'LRBA gene',
+      main = "LRBA gene",
       with.gene = TRUE)
 
 dev.off()
