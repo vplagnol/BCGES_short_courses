@@ -65,9 +65,10 @@ I strongly recommend reading this \href{http://genomeinformatician.blogspot.co.u
 {\bf Exercise:} Take an example BAM file provided as part of this practical and convert it to CRAM. Do you see a reduction of the file size?
 
 <<CRAM, engine = 'bash', echo = echo, results = results>>=
-fasta=/cluster/project8/vyp/vincent/data/reference_genomes/fasta/human_g1k_v37.fasta
+fasta=../session4_multi_sample_calling_annotation/human_g1k_v37.fasta
 BAM=../data/BAM_files/HG00130.mapped.ILLUMINA.bwa.GBR.exome.20130415.bam
 CRAM=results/HG00130.mapped.ILLUMINA.bwa.GBR.exome.20130415.cram
+
 ./bin/samtools_v1.0  view -C -T $fasta -o $CRAM $BAM
 ls -ltrh $CRAM $BAM
 @
@@ -252,7 +253,7 @@ For the first row, the third column tells you 284 of these positions are covered
 This is not very readable, so the output can for example be processed in \texttt{R} using the code below:
 
 <<process.bed.output, fig.width = 4, fig.height = 4>>=
-gcov = read.table('results/HG00130_coverage.txt');
+gcov = read.table("results/HG00130_coverage.txt");
 
 # Create a cumulative distribution from the "raw" hist
 # (truncate at depth >=1000)

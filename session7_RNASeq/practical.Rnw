@@ -162,7 +162,7 @@ bowtie2-build -f ../data/RNASeq/chr12_short.fa ../data/RNASeq/chr12_short
 
 With this, we can now perform the alignment step. But we first create some output folders to store all the output files:
 <<mkdir.1, engine = 'bash'>>=
-mkdir results/tophat_output
+mkdir results/tophat_output_with_gtf
 @ 
 
 Now we can start working with the fastq files:
@@ -170,20 +170,29 @@ Now we can start working with the fastq files:
 f1=../data/RNASeq/reads_1.fq.gz
 f2=../data/RNASeq/reads_2.fq.gz
 
-tophat --no-coverage-search -o results/tophat_output -r 220 --library-type fr-unstranded \
-      --segment-length 30 -G ../data/RNASeq/chr12_short.gtf ../data/RNASeq/chr12_short ${f1} ${f2}
+tophat --no-coverage-search -o results/tophat_output_with_gtf -r 220 --library-type fr-unstranded \
+      --segment-length 30 -G ../data/RNASeq/chr12_short.gtf ../data/RNASeq/chr12_short ${f1} ${f2} \
+      --rg-sample test --rg-id test  ## these sets the tags in the header of the BAM file
 @
 
-\subsection{Looking at the BAM file}
+{\bf Exercise: } For now, simply make sure you can run these scripts and that the output makes sense.
+Look at the BAM file, make sure you can see the appropriate tags in it. Also look at the general output of tophat.
 
-Can you see what subtle differences can be found in a RNA-Seq BAM file compared to a DNA sequencing BAM file?
+
+{\bf Exercise:} Can you see a subtle difference between a RNA-Seq BAM file and a DNA sequencing BAM file?
 The read extracted below should illustrate this.
-
 <<look.BAM, engine = 'bash'>>=
+samtools index results/tophat_output/accepted_hits.bam
 samtools view results/tophat_output/accepted_hits.bam  | grep 16M2150N34M > results/odd_read.sam
 @ 
 
-\subsection{\texttt{Cufflinks}}
+<<answers, echo = echo, results = results>>=
+#The Ns in the CIGAR string indicate introns, identified by split reads.
+@
+
+
+%%%%%%%%%%%%%%%
+\subsection{Expression level estimation using \texttt{Cufflinks}}
 
 A popular software often associated with \texttt{tophat} is \texttt{cufflinks}.
 This piece of software is designed to estimate the abundance of each gene (and potentially isoforms).
@@ -191,14 +200,53 @@ A call to \texttt{cufflinks} is pretty straightforward:
 
 <<cufflinks, engine = 'bash', eval = FALSE>>=
 cufflinks  -o results/cufflinks_output --GTF ../data/RNASeq/chr12_short.gtf \
-   results/tophat_output/accepted_hits.bam
+   results/tophat_output_with_gtf/accepted_hits.bam
 @ 
+
+\noindent
+{\bf Exercise:} Go through the output, make sure you understand what all columns mean.
+Can you see the distinction between the isoform level and gene based estimates?
+
+%%%%%%%%%%%%%%%
+\subsection{What if we do not have a GTF file?}
+A quick way to identify introns (and therefore exons) is to use these split reads to see where the gaps in the sequence are.
+I propose for example to pick a highly expressed gene ({\it DCP1B}) for example and to look at the introns in that gene.
+Because how to do this did not seem obvious to me, I wrote a small perl script that does the parsing (something very basic).
+See the example below, and make sure that you can run that code.
+
+<<introns, engine = 'bash'>>=
+samtools index results/tophat_output_no_gtf/accepted_hits.bam
+samtools view  results/tophat_output_no_gtf/accepted_hits.bam 12:2055213-2113677 | \
+  awk '{if ($6 ~ /N/ ) {print;}}' | ./scripts/get_introns.pl | \
+  awk '{print $4"_"$5}'| sort | uniq -c > results/DCP1B_no_gtf.tab
+@
+
+There are plenty of situations where we do not have a GTF file. It could be because the species is not well annotated, or because for some reason you do not trust a published GTF file (low quality, unusual tissue type...).
+
+{\bf Exercise: } What does the output of \texttt{tophat} look like in the absence of a GTF? Start by creating a folder that will contain the output of tophat and run tophat without a GTF file. Do you identify the same introns and at the same frequency in the gene {\it DCP1B}?  I suggest to start by creating a folder to store the data 
+<<mkdir.2, engine = 'bash'>>=
+mkdir results/tophat_output_no_gtf
+@ 
+
+<<tophat.no.gtf, engine = 'bash', echo = echo, results = results>>=
+f1=../data/RNASeq/reads_1.fq.gz
+f2=../data/RNASeq/reads_2.fq.gz
+
+tophat --no-coverage-search -o results/tophat_output_no_gtf -r 220 --library-type fr-unstranded \
+      --segment-length 30 ../data/RNASeq/chr12_short ${f1} ${f2} \
+      --rg-sample test --rg-id test  ## these sets the tags in the header of the BAM file
+@ 
+  
+
+
 
 
 
 %%%%%%%%%%%%%%%%%
 \clearpage
 \section{Differential expression analysis (30 minutes)}
+
+\subsection{Using DESeq}
 
 We start by loading the DESeq package as well as an example dataset from a mouse brain RNA-Seq experiment.
 <<<deseq, message = FALSE>>=
@@ -242,5 +290,36 @@ head(deseq.pval)
 @
 
 
-  
+\subsection{Using DESeq2}
+Relatively recently, the authors of \texttt{DESeq} have released a new version of the \texttt{DESeq} package and called it \texttt{DESeq2}.
+The commands are similar, but there are also differences.
+The best way to learn about a \texttt{R} package is to work through the vignette, which highlights the main capabilities of the package.
+The vignette for \texttt{DESeq2} is located \href{http://www.bioconductor.org/packages/release/bioc/vignettes/DESeq2/inst/doc/DESeq2.pdf}{here}.
+
+\noindent
+{\bf Exercise:} Perform a differential expression analysis using the newer \texttt{DESeq2} package. This is essentially about finding the right commands in the vignette and transposing them to your situation.
+
+<<deseq2, echo = echo, results = results, eval = FALSE, message = FALSE>>=
+library(DESeq2)
+load("../data/RNASeq/deseq_counts_TDP43.RData")
+design.deseq <- c('control', 'control', 'control', 'control', 'KD', 'KD', 'KD', 'KD')
+
+dds <- DESeqDataSetFromMatrix(countData = genes.counts,
+                              colData = data.frame(KD = design.deseq),
+                              design = ~ KD)
+dds <- DESeq(dds)
+res <- results(dds)
+resOrdered <- res[order(res$padj),]
+head(resOrdered)
+
+@
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Galaxy server}
+
+Have a look at the Galaxy server tools for RNA-Seq analysis.
+Can you replicate the alignment steps? And can you run cufflinks as well?
+Get a feeling for the tools that Galaxy offers and decide whether you much rather the (more constrained) web interface, or whether you are OK with the command lind tools.
+Both solutions are absolutely acceptable.
+
 \end{document}
