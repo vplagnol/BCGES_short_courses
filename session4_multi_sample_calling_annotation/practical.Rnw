@@ -46,20 +46,16 @@ This file is large and is therefore not on the \texttt{github} of the class.
 It can be downloaded using a \texttt{ftp} site and the \texttt{wget} utility
 
 <<wget.fastq, eval = FALSE, engine = 'bash'>>=
-## go to the right folder
-cd ../data/
 ##get the file from the web
 wget ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/technical/reference/human_g1k_v37.fasta.gz
 ##unzip it
 gunzip human_g1k_v37.fasta.gz
 ##index the fasta
 samtools faidx human_g1k_v37.fasta
-##go back to where you were (or should have been!)
-cd ../session4_multi_sample_calling_annotation/
 @
 
 These three steps download the compressed reference, unzip it and generate an index for that file.
-Please save it in your \texttt{data} folder (at the same level as all the ``session'' directories), because my scripts will assume that this is where this file can be found.
+Please save it in your \texttt{session4} folder because my scripts will assume that this is where this file can be found.
 
 Because \texttt{samtools} can work with smaller reference genome (i.e. no need to have the full genome) I also added a version of chr21 fasta (build 37 of the human genome) in the \texttt{data/reference} folder. 
 However, it is zipped to not overwhelm the \texttt{github} site.

@@ -4,7 +4,7 @@ if [ ! -e results ]; then mkdir results; fi
 ### Below the path to the GATK executable. It will need to be updated 
 #GATK=/usr/local/gatk/GenomeAnalysisTK.jar
 GATK=/cluster/project8/vyp/vincent/Software/GenomeAnalysisTK-3.2-2/GenomeAnalysisTK.jar
-fasta=../data/human_g1k_v37.fasta
+fasta=human_g1k_v37.fasta
 
 
 #### first create a list file that contains all the relevant BAM files
