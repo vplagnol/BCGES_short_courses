@@ -80,6 +80,18 @@ awk '{if ( ($2 == "POS") || ($2 == 43847096)) print $1,$2,$4,$5,$9, $10, $15}' \
 Make sure that you understand the meaning of all the fields in the output vcf file.
 Of note, you can see the total depth for each sample in the output VCF file, but I do not think that an option exists in \texttt{samtools} to show the depth per allele, unlike GATK (see below).
 
+Another thing that is important is to understand what \texttt{samtools mpileup} actually does, and what format the calls are based on.
+I use the command below routinely to make sure that my calls are not buggy, that I have the right sample... that sort of things.
+It is usally referred to as MAQ pileup.
+
+<<check.pileup, engine = 'bash'>>=
+samtools mpileup -f ../data/reference/chr21.fasta -r 21:43847096-43847096 \
+       ../data/BAM_files/HG00250.mapped.ILLUMINA.bwa.GBR.exome.20121211.bam
+@ 
+
+In class we will discuss this format and how to interpret this output.  
+
+
 %%%%%%%%%%%%%%%%%%
 \subsection{GATK v2.0 Unified Genotyper (30 minutes)}
 The GATK Unified Genotyped (UG) has been the standard approach for GATK for a while, and still delivers high quality and reliable calls.
@@ -169,7 +181,7 @@ vcftools --vcf results/GATK_msamplecalling.vcf --freq --out results/GATK_UG
 
 Note that from this output it is easy to compare the number of calls for both algorithms.
 <<wc, engine = 'bash'>>=
-wc -l samtools.frq GATK_UG.frq
+wc -l results/samtools.frq results/GATK_UG.frq
 @ 
 
 So where does the difference come from? A first thing is the fact that the call to GATK used a minimum quality filter of 30, which was not applied to the \texttt{samtools} output. 
@@ -201,7 +213,7 @@ vcftools --vcf results/UBASH31A_samtools.vcf --minQ 30 --freq --out results/freq
 
 <<plot.pretty, fig.show = fig.show, fig.width = 7, fig.height = 7, results = results, echo = echo, tidy = TRUE>>=
 data.samtools <- read.table('results/samtools.frq', skip = 1, col.names = c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'All1', 'All2'))
-data.gatk <- read.table('GATK_UG.frq', skip = 1, col.names = c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'All1', 'All2'))
+data.gatk <- read.table('results/GATK_UG.frq', skip = 1, col.names = c('CHROM', 'POS', 'N_ALLELES', 'N_CHR', 'All1', 'All2'))
 
 ### now I modify the string that contains the allele, to just keep the frequencies
 data.samtools$frq.sam <- as.numeric(gsub(pattern = '.*:', data.samtools$All2, replacement = ''))
