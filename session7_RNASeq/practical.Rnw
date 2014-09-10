@@ -182,8 +182,8 @@ Look at the BAM file, make sure you can see the appropriate tags in it. Also loo
 {\bf Exercise:} Can you see a subtle difference between a RNA-Seq BAM file and a DNA sequencing BAM file?
 The read extracted below should illustrate this.
 <<look.BAM, engine = 'bash'>>=
-samtools index results/tophat_output/accepted_hits.bam
-samtools view results/tophat_output/accepted_hits.bam  | grep 16M2150N34M > results/odd_read.sam
+samtools index results/tophat_output_with_gtf/accepted_hits.bam
+samtools view results/tophat_output_with_gtf/accepted_hits.bam  | grep 16M2150N34M > results/odd_read.sam
 @ 
 
 <<answers, echo = echo, results = results>>=
@@ -215,10 +215,10 @@ Because how to do this did not seem obvious to me, I wrote a small perl script t
 See the example below, and make sure that you can run that code.
 
 <<introns, engine = 'bash'>>=
-samtools index results/tophat_output_no_gtf/accepted_hits.bam
-samtools view  results/tophat_output_no_gtf/accepted_hits.bam 12:2055213-2113677 | \
+samtools index results/tophat_output_with_gtf/accepted_hits.bam
+samtools view  results/tophat_output_with_gtf/accepted_hits.bam 12:2055213-2113677 | \
   awk '{if ($6 ~ /N/ ) {print;}}' | ./scripts/get_introns.pl | \
-  awk '{print $4"_"$5}'| sort | uniq -c > results/DCP1B_no_gtf.tab
+  awk '{print $4"_"$5}'| sort | uniq -c > results/DCP1B_with_gtf.tab
 @
 
 There are plenty of situations where we do not have a GTF file. It could be because the species is not well annotated, or because for some reason you do not trust a published GTF file (low quality, unusual tissue type...).
