@@ -21,13 +21,15 @@ options(tidy=TRUE, width=80)
 
 \clearpage
 
+One thing before we start: please unzip the file \texttt{chr12\_short.fa.gz} in the \texttt{data/RNASeq} folder and go back to seesion 7.
+
 \section{A last (non-RNA-Seq) point about VCF format and R}
 
 \texttt{R} is actually much better than I anticipdated at reading VCF files, and I am currently learning what is available.
 I came across the excellent package \texttt{VariantAnnotation}. Installation instructions are available \href{http://www.bioconductor.org/packages/release/bioc/html/VariantAnnotation.html}{here}.
 I wanted to highlight quickly what this package does with the code below. I find it very elegant and practical, so have a look, this may be quite useful.
 
-<<fancy.VCF>>=
+<<fancy.VCF, eval = FALSE>>=
 library(VariantAnnotation)
 input.vcf <- "../session4_multi_sample_calling_annotation/results/UBASH31A_samtools.vcf"
 my.vcf <- readVcf(input.vcf, "hg19")
