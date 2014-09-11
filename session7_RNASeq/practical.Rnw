@@ -170,8 +170,9 @@ A popular aligner for RNA-Seq data is \texttt{tophat} and we will go over some b
 \subsection{Aligning with \texttt{tophat} and \texttt{bowtie}}
 
 It is important to note that the underlying alignment engine for \texttt{tophat} is \texttt{bowtie}, hence many commands are shared with standard calls to \texttt{bowtie}. We start by building a \texttt{bowtie} index for a short portion of chromosome 12, which we will use as an example for this class.
-Before you go through these steps, execute the script  \texttt{scripts/tophat\_bowtie\_scripts.sh}.
+Go through the steps below. Alternatively you should be able to execute the script  \texttt{scripts/tophat\_bowtie\_scripts.sh}.
 It will generate all the output files we want to look into, and the following goes through these commands in more details.
+But the step by step walkthrough is probably a better way to learn.
 
 <<index, engine = 'bash', eval = FALSE>>=
 bowtie2-build -f ../data/RNASeq/chr12_short.fa ../data/RNASeq/chr12_short
