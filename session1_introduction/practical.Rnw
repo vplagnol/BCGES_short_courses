@@ -287,6 +287,8 @@ head(bam.reads[[1]]$pos)
 
 
 
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \clearpage
 \section{Merging overlapping paired-end reads (20 minutes)}
@@ -294,20 +296,71 @@ head(bam.reads[[1]]$pos)
 Another useful thing to be aware of is the possibility to merge read pairs that overlap in the middle.
 This happens when the combined length of both reads exceeds the length of the DNA fragment they originate from.
 A review of tools to perform this task is available \href{http://thegenomefactory.blogspot.de/2012/11/tools-to-merge-overlapping-paired-end.html}{here}.
-I propose here to have a look at the program \href{http://sco.h-its.org/exelixis/web/software/pear/doc.html}{PEAR}, which has been useful for the applications I had in mind.
+I have tested a few of these tools and I have been happy with two of them: 
+\begin{itemize}
+\item One is \href{http://sco.h-its.org/exelixis/web/software/pear/doc.html}{PEAR}
+\item And the other is \href{http://ccb.jhu.edu/software/FLASH/}{FLASH}.
+\end{itemize}
+
+If time allows and this is something you are interested in, I propose to have a go at running \texttt{PEAR}.
 Start by downloading the pre-compiled binary to your own computer (this program is not preinstalled).
 You should be able to run something like the command below, after changing the path to the appropriate location of the executable:
 
 <<pear, engine = 'bash', eval = FALSE>>=
-bin/pear-0.9.4-64 -e -v 10 \
-   -f ../data/fastq_for_merging/reads1.fq -r ../data/fastq_for_merging/reads2.fq -o results/merged -c 40
+pear-0.9.4-64 -e -v 10 -f ../data/fastq_for_merging/reads1.fq \
+                             -r ../data/fastq_for_merging/reads2.fq \
+                             -o results/merged -c 40
 @
 
+And now something very similar using flash:
+
+<<flash, engine = 'bash', eval = FALSE>>=
+flash -m 10 -o results/tough_merge ../data/fastq_for_merging/reads1.fq \
+                                   ../data/fastq_for_merging/reads2.fq \ 
+                                   1> results/flash.out 2> results/flash.error
+@ 
+
 Check what the output looks like, in particular the read length of the assembled reads. 
-Have a look at the options that PEAR uses, and see how the choice of the \texttt{v} argument affects the final results.
+Have a look at the options that PEAR and FLASH use, and see how the choice of the \texttt{v} argument affects the final results.
+There are some discrepancies between the output of both software. It may be interesting to understand them and assess which you think is doing the best job.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\section{Trimming reads (20 minutes)}
+
+Trimming reads usually refers to the process of cutting the end of the reads, because these are more likely to be of lower quality.
+One good way to illustrate the importance of trimming is to follow-up on the example above of merging paired end reads.
 
 \noindent
-{\bf Warning:} Note that PEAR requires that you know which of the reads are forward and reverse, which is probably not the case for a fastq file that is not stranded or that has been processed. So be a bit careful before running this code on a generic fastq.
+<<failMerge, engine ='bash', eval = FALSE>>=
+flash -m 10 -o results/tough_merge ../data/fastq_for_merging/tough_read1.fq \
+                                   ../data/fastq_for_merging/tough_read2.fq \ 
+                                   1> results/flash.out 2> results/flash.error
+@ 
+
+\noindent
+{\bf Exercise:} Can you understand why the merging fails so miserably in this example? What is the source of the problem?
+
+So it looks terrible! Now we will want to fix this using trimming.
+My tool of choice is called \texttt{sickle} and it has not failed me so far.
+What we want to do is cut the right end of each read (and only the right end!) as long as the average quality is lower than 20.
+
+<<sickle, engine='bash', eval = FALSE>>=
+sickle pe -t sanger -l 0 -q 20 -f ../data/fastq_for_merging/tough_read1.fq \
+                                -r ../data/fastq_for_merging/tough_read2.fq \
+                                -o results/tough_read1_trimmed.fq \
+                                -p results/tough_read2_trimmed.fq \
+                                -s no_use_because_l_is_zero.fq
+@ 
+
+{\bf Exercise:} Can you now try to merge again using the trimmed files? How much better does it look?
+Do you understand where the difference comes from?
+
+<<goodMerge, engine ='bash', eval = FALSE, results = results, echo = echo>>=
+flash -m 10 -o results/tough_merge results/tough_read1_trimmed.fq\
+                                   results/tough_read2_trimmed.fq \ 
+                                   1> results/flash2.out 2> results/flash2.error
+@ 
 
 
 
