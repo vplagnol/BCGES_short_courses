@@ -18,6 +18,7 @@
 if (!exists('forStudents')) forStudents <- TRUE  ##default is to print the student version
 if (!forStudents) {echo <- TRUE; results <- 'markup'; fig.show <- 'asis'} else {results <- 'hide'; echo  <- FALSE; fig.show <- 'hide';}
 options(tidy=TRUE, width=100)
+if (!file.exists("results")) dir.create("results")
 @
 
 The aim of this first session is to introduce the tools that we will use to manipulate sequence data.
@@ -199,46 +200,38 @@ The manual page should have all the commands and ideas to go through these, so b
 
 
 \begin{enumerate}
-\item Download the index of all the aligned file from the 1,000 Genomes. You can for example do it using:
-<<wget, engine = 'bash', eval = TRUE>>=
-wget -O results/1KG_index.tab ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/exome.alignment.index
-@ 
-\item Using \texttt{samtools view} over the web, download the {\it BRCA1} reads for the sample \texttt{HG00118}.
-  You will first need to find where that file is located on the web, using the index you just downloaded.
+\item Find the CRAM file for sample HG00118 on the ftp site. Look at \href{ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data/}{this location}.
+\item Using \texttt{samtools view} (version 1.2 required for CRAM analysis) over the web, download the {\it BRCA1} reads for the sample \texttt{HG00118}.
   Make sure that your output is in BAM format. \\ \noindent
-{\bf Note:} This step may seem difficult at first so the resulting BAM file should be available by default as part of the github set of files. You will also need the address of the 1KG ftp site: \texttt{ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp}.
-
+{\bf Note:} This step may seem difficult at first so the resulting BAM file should be available by default as part of the github set of files. 
 <<view, engine = 'bash', echo = echo, results = results, tidy = TRUE>>=
-##first I grep the index file to find the filename
-grep HG00118 results/1KG_index.tab  | grep HG00118.mapped.ILLUMINA | awk '{print $1}'
-##Now I repeat the line above but put the output in the variable fileName
-fileName=`grep HG00118 results/1KG_index.tab  | grep HG00118.mapped.ILLUMINA | awk '{print $1}'`
-### Now I add to this the location of the ftp server
-BAM=ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/${fileName}
+## here is the location of a CRAM file on the 1,000 Genomes ftp
+oneKGftp=ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/
+CRAM=${oneKGftp}/data/HG00118/alignment/HG00118.alt_bwamem_GRCh38DH.20150718.GBR.low_coverage.cram
 ##Then samtools view, note the -b option to generate a BAM output
-samtools view -b -o results/BRCA1_HG00118.bam $BAM 17:41243452-41277500
+samtools1.2 view -b -o results/BRCA1_HG00118.bam $CRAM chr17:43044295-43125370
 @ 
 \item Index this BAM file using \texttt{samtools index}.
 <<index, engine = 'bash', echo = echo, results = results>>=
 ##Basic index command below, a must know!
-samtools index results/BRCA1_HG00118.bam
+samtools1.2 index results/BRCA1_HG00118.bam
 @ 
 \item Still using \texttt{samtools view}, subset the BAM file for the first coding exon (not the UTR) of {\it BRCA1}  (use transcript ENST00000357654 from Ensembl) and output in SAM format.
 <<exon1, engine = 'bash', echo = echo, results = results>>=
 ## the line of code below should create that SAM file
-samtools view results/BRCA1_HG00118.bam 17:41276132-41276034  > results/BRCA1_exon1.sam
+samtools1.2 view results/BRCA1_HG00118.bam chr17:43044295-43045802 > results/BRCA1_exon1.sam
 @ 
 \item Exercise: What do these lines do?
 <<view.2, engine = 'bash', eval = TRUE>>=
-samtools view -f 0x0002 results/BRCA1_HG00118.bam | wc -l
-samtools view -F 0x0002 results/BRCA1_HG00118.bam | wc -l
-samtools view -F 0x0040 results/BRCA1_HG00118.bam | wc -l
+samtools1.2 view -f 0x0002 results/BRCA1_HG00118.bam | wc -l
+samtools1.2 view -F 0x0002 results/BRCA1_HG00118.bam | wc -l
+samtools1.2 view -F 0x0040 results/BRCA1_HG00118.bam | wc -l
 @ 
 <<view.tips, engine = 'bash', eval = FALSE, results = results, echo = echo>>=
 ## Some short comments for each line below
-samtools view -f 0x0002 results/BRCA1_HG00118.bam #prints properly mapped pairs
-samtools view -F 0x0002 results/BRCA1_HG00118.bam #excludes properly mapped pairs
-samtools view -F 0x0040 results/BRCA1_HG00118.bam #print first read of pair
+samtools1.2 view -f 0x0002 results/BRCA1_HG00118.bam #prints properly mapped pairs
+samtools1.2 view -F 0x0002 results/BRCA1_HG00118.bam #excludes properly mapped pairs
+samtools1.2 view -F 0x0040 results/BRCA1_HG00118.bam #print first read of pair
 @ 
 \end{enumerate}
 
@@ -256,7 +249,7 @@ less -S results/headers.txt
 @ 
 
 \noindent
-{\bf Exercise:} Go through the output of \texttt{samtools view -H} and make sure you understand what all the fields mean.
+{\bf Exercise:} Go through the output of \texttt{samtools1.2 view -H} and make sure you understand what all the fields mean.
 This will be discussed in class. In the case of the downloaded 1KG file, much processing has happened so not all fields will make sense, but the important thing is to understand the general philosophy of the file. The ID, LB, SM tags are particularly useful.
 
 
@@ -304,48 +297,51 @@ I have tested a few of these tools and I have been happy with two of them:
 
 If time allows and this is something you are interested in, I propose to have a go at running \texttt{PEAR}.
 Start by downloading the pre-compiled binary to your own computer (this program is not preinstalled).
-You should be able to run something like the command below, after changing the path to the appropriate location of the executable:
+You should be able to run something like the command below:
 
-<<pear, engine = 'bash', eval = FALSE>>=
-pear-0.9.4-64 -e -v 10 -f ../data/fastq_for_merging/reads1.fq \
-                             -r ../data/fastq_for_merging/reads2.fq \
-                             -o results/merged -c 40
+<<pear, engine = 'bash', eval = TRUE, results = results>>=
+pear -e -v 10 -c 40 -f ../data/fastq_for_merging/reads1.fq \
+                    -r ../data/fastq_for_merging/reads2.fq \
+                    -o results/pear_merged
 @
 
-And now something very similar using flash:
+And now something very similar using \texttt{flash}:
 
-<<flash, engine = 'bash', eval = FALSE>>=
-flash -m 10 -o results/tough_merge ../data/fastq_for_merging/reads1.fq \
-                                   ../data/fastq_for_merging/reads2.fq \ 
+<<flash, engine = 'bash', eval = TRUE, results = results>>=
+flash -m 10 -o results/flash_merge ../data/fastq_for_merging/reads1.fq \
+                                   ../data/fastq_for_merging/reads2.fq \
                                    1> results/flash.out 2> results/flash.error
 @ 
 
-Check what the output looks like, in particular the read length of the assembled reads. 
-Have a look at the options that PEAR and FLASH use, and see how the choice of the \texttt{v} argument affects the final results.
-There are some discrepancies between the output of both software. It may be interesting to understand them and assess which you think is doing the best job.
+Check what the output looks like, in particular the read length of the assembled reads. The example provided is meant to be an easy one, and all reads should assemble properly.
+Have a look at the options that \texttt{PEAR} and \texttt{FLASH} use.
+There are some discrepancies between the output of both tools.
+It may be interesting to understand them and assess which you think is doing the best job.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \clearpage
 \section{Trimming reads (20 minutes)}
 
 Trimming reads usually refers to the process of cutting the end of the reads, because these are more likely to be of lower quality.
-One good way to illustrate the importance of trimming is to follow-up on the example above of merging paired end reads.
+One good way to illustrate the importance of trimming is to follow-up on the example above of merging paired end reads but with a more difficult example.
 
-\noindent
-<<failMerge, engine ='bash', eval = FALSE>>=
+Here is what it looks like with \texttt{flash}:
+<<failMerge, engine ='bash', eval = TRUE, results = results>>=
 flash -m 10 -o results/tough_merge ../data/fastq_for_merging/tough_read1.fq \
-                                   ../data/fastq_for_merging/tough_read2.fq \ 
-                                   1> results/flash.out 2> results/flash.error
+                                   ../data/fastq_for_merging/tough_read2.fq \
+                                   1> results/flash_tough.out 2> results/flash_tough.error
 @ 
+
 
 \noindent
 {\bf Exercise:} Can you understand why the merging fails so miserably in this example? What is the source of the problem?
+(it is actually quite a NextSeq specific problem).
 
-So it looks terrible! Now we will want to fix this using trimming.
+So the conclusion of the previous exercise is that the outcome looks terrible! Now we will want to fix this.
 My tool of choice is called \texttt{sickle} and it has not failed me so far.
 What we want to do is cut the right end of each read (and only the right end!) as long as the average quality is lower than 20.
 
-<<sickle, engine='bash', eval = FALSE>>=
+<<sickle, engine='bash', eval = TRUE, results = results>>=
 sickle pe -t sanger -l 0 -q 20 -f ../data/fastq_for_merging/tough_read1.fq \
                                 -r ../data/fastq_for_merging/tough_read2.fq \
                                 -o results/tough_read1_trimmed.fq \
@@ -354,12 +350,22 @@ sickle pe -t sanger -l 0 -q 20 -f ../data/fastq_for_merging/tough_read1.fq \
 @ 
 
 {\bf Exercise:} Can you now try to merge again using the trimmed files? How much better does it look?
-Do you understand where the difference comes from?
+Do you understand where the difference comes from? What do you think the \texttt{awk} command line below is doing.
+\texttt{awk} is a very handy command line utility and I recommend getting used to it.
 
-<<goodMerge, engine ='bash', eval = FALSE, results = results, echo = echo>>=
-flash -m 10 -o results/tough_merge results/tough_read1_trimmed.fq\
-                                   results/tough_read2_trimmed.fq \ 
-                                   1> results/flash2.out 2> results/flash2.error
+<<awk.guess, engine='bash', eval = TRUE, results = results>>=
+awk 'NR%4==2{sum+=length($0)}END{print sum/(NR/4)}' results/tough_read1_trimmed.fq
+awk 'NR%4==2{sum+=length($0)}END{print sum/(NR/4)}' results/tough_read2_trimmed.fq
+@ 
+
+
+And now you can look at the output of the \texttt{flash} code, and see how much better things appear.
+Make sure you understand why that is the case.
+
+<<goodMerge, engine ='bash', eval = TRUE, results = results, echo = echo>>=
+flash -m 10 -o results/improved_merge results/tough_read1_trimmed.fq \
+                                      results/tough_read2_trimmed.fq \
+                                      1> results/flash_better.out 2> results/flash_better.error
 @ 
 
 

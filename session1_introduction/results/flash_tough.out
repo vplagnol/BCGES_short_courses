@@ -1,0 +1,39 @@
+[FLASH] Starting FLASH v1.2.11
+[FLASH] Fast Length Adjustment of SHort reads
+[FLASH]  
+[FLASH] Input files:
+[FLASH]     ../data/fastq_for_merging/tough_read1.fq
+[FLASH]     ../data/fastq_for_merging/tough_read2.fq
+[FLASH]  
+[FLASH] Output files:
+[FLASH]     ./results/tough_merge.extendedFrags.fastq
+[FLASH]     ./results/tough_merge.notCombined_1.fastq
+[FLASH]     ./results/tough_merge.notCombined_2.fastq
+[FLASH]     ./results/tough_merge.hist
+[FLASH]     ./results/tough_merge.histogram
+[FLASH]  
+[FLASH] Parameters:
+[FLASH]     Min overlap:           10
+[FLASH]     Max overlap:           65
+[FLASH]     Max mismatch density:  0.250000
+[FLASH]     Allow "outie" pairs:   false
+[FLASH]     Cap mismatch quals:    false
+[FLASH]     Combiner threads:      4
+[FLASH]     Input format:          FASTQ, phred_offset=33
+[FLASH]     Output format:         FASTQ, phred_offset=33
+[FLASH]  
+[FLASH] Starting reader and writer threads
+[FLASH] Starting 4 combiner threads
+[FLASH] Processed 25 read pairs
+[FLASH]  
+[FLASH] Read combination statistics:
+[FLASH]     Total pairs:      25
+[FLASH]     Combined pairs:   1
+[FLASH]     Uncombined pairs: 24
+[FLASH]     Percent combined: 4.00%
+[FLASH]  
+[FLASH] Writing histogram files.
+[FLASH]  
+[FLASH] FLASH v1.2.11 complete!
+[FLASH] 0.002 seconds elapsed
+[FLASH] Finished with 1 warning (see above)
