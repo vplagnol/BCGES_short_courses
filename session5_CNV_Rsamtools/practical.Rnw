@@ -277,7 +277,7 @@ You can also try the fancier looking \texttt{parallel} implementation proposed b
 <<bedtools.sol, engine = 'bash', echo = echo, results = results>>=
 for BAM in `find ../data/BAM_files -name \*bam`; do
   code=`basename $BAM .bam`
-  bedtools2.24 coverage -hist -abam $BAM -b tables/UBASH3A.bed | grep ^all > results/${code}_coverage.txt
+  bedtools2.24 coverage -hist -b $BAM -a tables/UBASH3A.bed | grep ^all > results/${code}_coverage.txt
 done
 @ 
 
