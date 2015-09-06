@@ -38,7 +38,7 @@
 \begin{frame}
   \frametitle{Some technical details about the class}
   \begin{itemize}
-  \item Co-taught between myself and Taane Clark from the LSHTM.
+  \item Co-taught between myself and Stephane Hue (LSHTM).
   \item My slides and practicals are available on \href{https://github.com/vplagnol/BCGES_short_courses}{Github}.
     \begin{itemize}
     \item This is a collaborative editing side, and I strongly recommend becoming familiar with it.
@@ -77,7 +77,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{(Very) short introduction to sequencing technologies}
+\section{Short introduction to sequencing technologies}
 
 
 \begin{frame}
@@ -87,18 +87,6 @@
   \end{center}
 \end{frame}
 
-\begin{frame}
-  \frametitle{...is pretty much the same as the Solid idea}
-  \begin{center}
-    \includegraphics[width=9cm]{fig/solid3.jpg}
-  \end{center}
-  Stoechiometry is set such that each bead clonaly amplifies a single DNA molecule.
-\end{frame}
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Basic terminology}
 
 
 \begin{frame}
@@ -106,12 +94,15 @@
   \begin{center}
     \includegraphics[width=9cm]{fig/illumina_reads_basic.pdf}
   \end{center}
-  Illumina technology always reads from the 5' end to the 3' end.\\
-  The first read can be either of the two but the direction is set, and in the absence of something unusual both reads point toward each other and may overlap in the middle.
+  \begin{enumerate}
+    \item Illumina technology always reads from the 5' end to the 3' end.
+    \item If the DNA fragment is shorter than the read length, you get to read the adapter sequence at the end.
+    \item If the read length is greater than half the DNA fragment length, fragments overlap in the middle and it is possible to merge into a single synthetic read.
+  \end{enumerate}
 \end{frame}
 
 \begin{frame}
-  \frametitle{Mate-pair reads}
+  \frametitle{Mate-pair is not paired-end}
   \includegraphics[width=10cm]{fig/mate_pair.jpg}
 \end{frame}
 
@@ -125,7 +116,7 @@
 
 
 \begin{frame}
-  \frametitle{Read depth is not a good summary of data quality}
+  \frametitle{Read depth is a flawed summary of data quality}
   \begin{itemize}
   \item If the depth is uneven, a high mean read depth may not be informative.
   \item Sequence capture technologies introduce a lot of variability in read depth.
@@ -145,64 +136,12 @@
 
 
 \begin{frame}
-  \frametitle{Sample multiplexing (1)}
+  \frametitle{Some commonly used vocabulary}
   \begin{itemize}
-  \item A full sequencing run is often too much for a single sample.
-  \item One needs to find ways to split the sequencing across samples.
-  \item The first option is physical separation on the sequencing slide:
-    \begin{itemize}
-    \item The Illumina flow cell has 8 lanes so 8 plex sequencing is obvious.
-    \item Physical separation wastes some space on the slide.
-    \end{itemize}
-  \item Better: introduce next to the adapter a sample specific barcode (6 bp for Illumina).
-  \item Then assign each read to the sample it originated from.
-  \end{itemize}
-\end{frame}
-
-
-\begin{frame}
-  \frametitle{Sample multiplexing (2)}
-  \begin{itemize}
-  \item Sample multiplexing has been discussed for a long time now.
-  \item In my opinion, it still is not completely solved:
-    \begin{itemize}
-    \item Standard kits use 12 plex sequencing.
-    \item But we are often interested in much higher multiplexing level (100s or more).
-    \item A few companies can now provide this type of service (Fluidigm in particular).
-    \end{itemize}
-  \item When the multiplexing level is high, the cost of library preparation becomes an issue.
-  \end{itemize}
-\end{frame}
-
-
-\begin{frame}
-  \frametitle{Sequence capture (1)}
-  \begin{itemize}
-  \item We also typically want to target a genomic region, or the exome, rather than full genome sequencing.
-  \item This requires enriching the DNA for a specific target region, a process known as sequence capture.
-  \item An alternative to sequence capture is PCR based amplification but it creates artifacts of its own.
-    \begin{itemize}
-    \item It is however very efficient at generating a very high read depth.
-    \item It does prevent us from identifying duplicate reads properly.
-    \end{itemize}
-  \item Two main companies are competing for sequence capture products: Nimblegen and Illumina.
-  \end{itemize}
-\end{frame}
-
-
-
-\begin{frame}
-  \frametitle{Sequence capture (2)}
-  \begin{itemize}
-  \item Sequence capture can be achieved in different ways.
-  \item First generation used probes on a solid surface.
-  \item More recent assays used probes in solution, and it seems to give more consistent and higher quality results.
-  \item Many parameters affect capture efficiency:
-    \begin{itemize}
-    \item Quality of the DNA.
-    \item Size of the target region.
-    \item GC content.
-    \end{itemize}
+  \item Index usually referred to a 6-12 bp sequence inserted next to the adapter, which can be used to identify the DNA source (typically the individual being sequenced, but there are more sophisticated things one can do).
+  \item Capture refers to the broad range of techniques meant to enrich the DNA for regions of interest (your favorite gene, the exome...).
+  \item Hard trimming refers to the cutting of the low(er) quality end of the sequencing read (the 3' end) prior to alignment.
+  \item Soft trimming refers to cutting the end(s) of a read at the alignment step, in situations where one does not know what to do with the remaining part.
   \end{itemize}
 \end{frame}
 
@@ -210,16 +149,30 @@
 \begin{frame}
   \frametitle{Cloud computing}
   \begin{itemize}
+  \item There is a lot one can do with Illumina's basespace service.
   \item Remote servers are now available to perform some of these tasks, like the \href{main.g2.bx.psu.edu)}{Galaxy server}
   \item A true solution for cloud computing is the \href{http://aws.amazon.com/ec2}{Amazon server}.
-  \item Amazon provides an incredibly flexible solution, probably more flexible than Galaxy.
-  \item Of course there are costs, see for example {\it Biomedical Cloud Computing With Amazon Web Services}, PLoS Computational biology, 2011.
     \begin{itemize}
-    \item Aligning a full human genome cost \$XXX according to their computations (your guess).
-    \item See the answer \href{http://www.ploscompbiol.org/article/info\%3Adoi\%2F10.1371\%2Fjournal.pcbi.1002147}{here}.
+    \item It takes some expertise but if yuo do not want to set up your own computing environment and want to access an unlimited computing ressource, this is what you want.
     \end{itemize}
   \end{itemize}
 \end{frame}
+
+
+\begin{frame}
+  \frametitle{Galaxy servers}
+  \begin{itemize}
+  \item The main server of Galaxy is located here:  \href{http://main.g2.bx.psu.edu}{http://main.g2.bx.psu.edu}.
+  \item But other \href{http://wiki.g2.bx.psu.edu/PublicGalaxyServers?action=show&redirect=Public+Galaxy+Servers}{instances}  exist.
+  \item Various Galaxy servers deliver slightly different packages and options.
+  \item It is even possible to install your own server if you found it useful.
+  \item There are also options for data sharing, and sharing analysis protocols which are really useful.
+    \begin{itemize}
+    \item The idea is to make the bioinformatic analysis of sequence data more accessible and reproducible.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
 
 
 
@@ -299,7 +252,7 @@
   \frametitle{Several flavors of fastq formats}
   \begin{itemize}
   \item The Sanger fastq: qualities = ASCII code - 33
-  \item The Illumina fastq: qualities = ASCII code - 64
+  \item The Illumina fastq: qualities = ASCII code - 64 (mostly historical)
   \item The latest Illumina fastq (CASAVA 1.8): qualities = ASCII code - 33    
     \begin{itemize}
     \item This format adds other technical refinements, including a Y/N flag for each read (Y means failed QC).
@@ -311,20 +264,22 @@
 
 \begin{frame}
   \frametitle{Splitting the fastq files into smaller chunks}
-   \begin{itemize}
-   \item The standard Illumina pipeline splits the fastq into a large number of smaller fastq files.\\
+  \begin{itemize}
+   \item Still today, some version of the standard Illumina pipeline splits the fastq into a large number of smaller fastq files.\\
      \includegraphics[width=11cm]{fig/fastq_split.png}
    \item This is apparently useful for the standard CASAVA pipeline that comes with Illumina instruments.
    \end{itemize}
 \end{frame}
 
+
+
 \begin{frame}
-  \frametitle{QC tool for fastq file}
+  \frametitle{A useful QC tool for fastq}
   \begin{itemize}
   \item A researcher at the Babraham has put together some tools to check that a fastq file is OK.
   \item See the webpage: \href{http://www.bioinformatics.bbsrc.ac.uk/projects/download.html\#fastqc}{FastQC}
   \item It does some useful checks for base quality, over-representation of k-mers...
-  \item In case some issue arises, it is a good tool to use and straightforward to run.
+  \item It can actually be used within Galaxy, among other things.
   \end{itemize}
 \end{frame}
 
@@ -344,7 +299,7 @@
 
 
 \begin{frame}
-  \frametitle{How Illumina quality control is set}
+  \frametitle{Illumina internal read QC}
   \begin{itemize}
   \item To remove the least reliable data from the analysis results, often derived from overlapping clusters, raw data is filtered to remove any reads that do not meet the overall quality as measured by the Illumina chastity filter. 
   \item The chastity of a base call is calculated as the ratio of the brightest intensity divided by the sum of the brightest and second brightest intensities.
@@ -356,12 +311,12 @@
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{BAM format}
+\subsection{BAM, SAM, CRAM}
 
- \begin{frame}
-    \frametitle{Outline}
-    \tableofcontents[currentsection]
-  \end{frame}
+\begin{frame}
+  \frametitle{Outline}
+  \tableofcontents[currentsection]
+\end{frame}
 
 \begin{frame}
   \frametitle{Why do we need a BAM format?}
@@ -406,7 +361,7 @@
   \frametitle{Basic \texttt{samtools} manipulation}
   \begin{itemize}
   \item It is a good idea to read through the \href{http://samtools.sourceforge.net/samtools.shtml}{samtools} manual.
-  \item With the recent release of \texttt{samtools} v1.0, you should transition toward \href{http://www.htslib.org/}{this location} to update \texttt{samtools}.
+  \item With the releases of \texttt{samtools} v1.0 and beyond, you should transition toward \href{http://www.htslib.org/}{this location} to update \texttt{samtools}.
   \item Most tools have sophisticated options but \texttt{samtools view} in particular can do useful thing:
     \begin{itemize}
     \item Subset a specific gene/region/chromosome, potentially over the web.
@@ -433,40 +388,26 @@
     0x0200   &   f  &     the read fails platform/vendor quality checks\\
     0x0400   &   d  &     the read is either a PCR or an optical duplicate
   \end{tabular}
-  {\tiny From the \texttt{samtools} manual}
+      {\tiny From the \texttt{samtools} manual}
 \end{frame}
 
 \begin{frame}
   \frametitle{Even more compression with CRAM}
   \begin{itemize}
-  \item The EBI has a technical page about the \href{http://www.ebi.ac.uk/ena/about/cram_toolkit}{CRAM} format.
-  \item Here is the \href{http://www.ebi.ac.uk/about/news/service-news/cram-pre-launch}{news release}, with full availability on June 2013.
-  \item The very recently released version of \texttt{samtools} fully incorporates the BAM format.
-  \item See this \href{http://genome.cshlp.org/content/21/5/734}{paper} for more information on the CRAM format.
-  \end{itemize}
-\end{frame}
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Using the Galaxy server(s)}
-
-
-\begin{frame}
-  \frametitle{Galaxy servers}
-  \begin{itemize}
-  \item The main server of Galaxy is located here:  \href{http://main.g2.bx.psu.edu}{http://main.g2.bx.psu.edu}.
-  \item But other \href{http://wiki.g2.bx.psu.edu/PublicGalaxyServers?action=show&redirect=Public+Galaxy+Servers}{instances}  exist.
-  \item Various Galaxy servers deliver slightly different packages and options.
-  \item It is even possible to install your own server if you found it useful.
-  \item There are also options for data sharing, and sharing analysis protocols which are really useful.
+  \item CRAM is the next generation version of sequence data storage, meant to optimize storage.
     \begin{itemize}
-    \item The idea is to make the bioinformatic analysis of sequence data more reproducible.
+    \item This is more effective than BAM.
+    \item Index is also built-in, which makes sense (who would use a BAM file without its index?)
+    \end{itemize}
+  \item Here is the \href{http://www.ebi.ac.uk/about/news/service-news/cram-pre-launch}{news release}, with full availability on June 2013.
+  \item Recently released version of \texttt{samtools} fully incorporates the BAM format.
+  \item More info on CRAM format:
+    \begin{itemize}
+    \item A scientific \href{http://genome.cshlp.org/content/21/5/734}{paper}.
+    \item And a more technical page about the \href{http://www.ebi.ac.uk/ena/about/cram_toolkit}{CRAM} format.
     \end{itemize}
   \end{itemize}
 \end{frame}
-
-
-
 
 
 

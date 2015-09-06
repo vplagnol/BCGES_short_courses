@@ -39,7 +39,6 @@ So we will use \texttt{R} mostly to play with the data and show the sort of thin
 \clearpage
 \section{Basic fastq reading and quality control (1h)}
 
-
 \subsection{Basic shell scripting to read NGS files (20 minutes)}
 
 
@@ -96,6 +95,7 @@ tail -20 ../data/fastq_files/fastq1_1.txt > results/last_20.txt
 
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Using the shortRead package in R (15 minutes)}
 We start by loading one of the most relevant library, called ``ShortReads''. This package may not be installed but it can easily done so by running:
 <<install, eval = FALSE>>=
@@ -181,15 +181,42 @@ Run the \texttt{fastqc} code on these files (note that a standalone version also
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \clearpage
-\section{Reading and manipulating BAM files (about 1.5h)}
+\section{Reading and manipulating SAM, BAM and CRAM files using \texttt{samtools} (about 1.5h)}
 BAM files are compressed files that contain the information from the FASTQ files, plus additional information about the location where the reads map.
 A key feature of the BAM files is that they can be indexed, i.e. an associated file contains information about where each of the reads are located in the file.
 It allows very quick retrieval of reads that map to a given genomic location, which is the typical way one wants to use BAM files (for example, to extract all the reads that map to a gene of interest in order to find rare variants).
-
-\subsection{Using shell scripts ans \texttt{samtools} (40 minutes)}
+CRAM provides most of these features but in a more effective compression format.
+This is the future, if we can just manage to upgrade our tools.
 
 \texttt{samtools} is the key piece of software that is used to read, write and index BAM files.
-The \href{http://samtools.sourceforge.net/samtools.shtml}{manual page} is the first place to go to find information about how to use \texttt{samtools}.
+\texttt{samtools} has been maintained essentially by Heng Li until the release of version 1.0
+However, some tools used in this class still rely on the ``old'' samtools. For that reason you should find two versions of \texttt{samtools} installed.
+\begin{itemize}
+\item The old version which is in your path and simply called \texttt{samtools}. This one will disappear in the next iteration of the class, but it is still here for the time being.
+\item The updated version 1.2 of \texttt{samtools}, for which you can find the manual \href{http://www.htslib.org/doc/samtools.html}{at this location} and can be called using \texttt{samtools1.2}. This is the version with CRAM support.
+\end{itemize}
+
+So in most cases, rather than \texttt{samtools} you probably want to use \texttt{samtools1.2}, though many functions are equivalent.
+
+\subsection{Converting between formats (10 minutes)}
+
+One thing one does extensively with sequence data is shifting from one format to the next.
+Consider for example this BAM file, which has been provided as an example BAM for the class:
+<<test.file, engine='bash'>>=
+ls -ltrh ../data/BAM_files/HG00130.mapped.ILLUMINA.bwa.GBR.exome.20130415.bam
+@ 
+
+We will have a go at the following \noindent
+{\bf Exercise:} convert this file to CRAM and check that the compression has improved.
+<<CRAM, engine = 'bash', echo = echo, results = results>>=
+samtools1.2 view -C  -o is_it_better_now.cram ../data/BAM_files/HG00130.mapped.ILLUMINA.bwa.GBR.exome.20130415.bam
+ls -ltrh is_it_better_now.cram
+@ 
+
+
+
+\subsection{More \texttt{samtools} (40 minutes)}
+
 A very useful feature of \texttt{samtools} is that it can work over a ftp site, by downloading the index locally and only pulling the reads that are relevant.
 That allows to access rich datasets online without having to download very large files.
 The exercise below illustrates some of these features.
@@ -197,7 +224,6 @@ The exercise below illustrates some of these features.
 \noindent
 {\bf Exercise:} The following should be useful as an introduction to the sort of things one may want to do with \texttt{samtools}.
 The manual page should have all the commands and ideas to go through these, so best to have a go and try.
-
 
 \begin{enumerate}
 \item Find the CRAM file for sample HG00118 on the ftp site. Look at \href{ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data/}{this location}.
@@ -349,6 +375,7 @@ sickle pe -t sanger -l 0 -q 20 -f ../data/fastq_for_merging/tough_read1.fq \
                                 -s no_use_because_l_is_zero.fq
 @ 
 
+\noindent
 {\bf Exercise:} Can you now try to merge again using the trimmed files? How much better does it look?
 Do you understand where the difference comes from? What do you think the \texttt{awk} command line below is doing.
 \texttt{awk} is a very handy command line utility and I recommend getting used to it.
