@@ -26,7 +26,7 @@ if (!forStudents) {echo <- TRUE; results <- 'markup'} else {results <- 'hide'; e
 \clearpage
 
 
-\section{A few more advanced ideas to consider (40 minutes)}
+\section{A few additional ideas to consider (40 minutes)}
 
 \subsection{Linux piping to limit input/output usage (10 minutes)}
 
@@ -52,26 +52,8 @@ novoalign -c 11 -o SAM -F STDFQ -f fasta1.fq fasta2.fq  -d $reference |
 \noindent
 {\bf Exercise:} Understand the structure of the code and  what the options used in the code above mean (at least for samtools which is freely available).
 
-\subsection{CRAM format as an alternative to BAM (10 minutes)}
+\subsection{gzip is magic (10 minutes)}
 
-Recently (and after we finished preparing the software for this course), the \texttt{samtools} developers released version 1.0 of the software.
-A key addition is the handling of the CRAM format, an optimized format that compresses BAM further.
-Given the very large size of exome/genome datasets, CRAM has the potential to make a real difference.
-The version 1.0 of \texttt{samtools} has been installed in the bin subdirectory of session 5, and hopefully runs without any issue on your current machine.
-The main page for \texttt{samtools} has moved to \href{http://www.htslib.org}{a different location}, and the associated documentation is \href{http://www.htslib.org/man/samtools/}{here}.
-I strongly recommend reading this \href{http://genomeinformatician.blogspot.co.uk/2014/08/cram-goes-mainline.html}{very good blog post} on the CRAM format that will tell you more about why this is useful.
-
-\noindent
-{\bf Exercise:} Take an example BAM file provided as part of this practical and convert it to CRAM. Do you see a reduction of the file size?
-
-<<CRAM, engine = 'bash', echo = echo, results = results>>=
-fasta=../session4_multi_sample_calling_annotation/human_g1k_v37.fasta
-BAM=../data/BAM_files/HG00130.mapped.ILLUMINA.bwa.GBR.exome.20130415.bam
-CRAM=results/HG00130.mapped.ILLUMINA.bwa.GBR.exome.20130415.cram
-
-samtools1.2  view -C -T $fasta -o $CRAM $BAM
-ls -ltrh $CRAM $BAM
-@
 
 
 \subsection{Tabix indexing of position sorted files (20 minutes)}
