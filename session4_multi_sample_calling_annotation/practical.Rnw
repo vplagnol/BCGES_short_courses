@@ -189,8 +189,8 @@ The first thing I propose to do is to compare the output of the GATK v2.0 output
 
 
 <<vcftools.1, engine ='bash', eval = TRUE, echo = echo, results = results>>=
-vcftools --vcf results/UBASH31A_samtools.vcf  --freq --out results/samtools
-vcftools --vcf results/GATK_msamplecalling.vcf --freq --out results/GATK_UG
+./vcftools --vcf results/UBASH31A_samtools.vcf  --freq --out results/samtools
+./vcftools --vcf results/GATK_msamplecalling.vcf --freq --out results/GATK_UG
 @ 
 
 Note that from this output it is easy to compare the number of calls for both algorithms.
@@ -203,7 +203,7 @@ So where does the difference come from? A first thing is the fact that the call 
 Try for example:
 
 <<vcftools2, engine = 'bash'>>=
-vcftools --vcf results/UBASH31A_samtools.vcf --minQ 30 --out results/samtools_filtered --recode
+./vcftools --vcf results/UBASH31A_samtools.vcf --minQ 30 --out results/samtools_filtered --recode
 @ 
 
 Note the use of the \texttt{recode} argument.
@@ -217,8 +217,8 @@ See how you could have created the same frequency file without the intermediate 
 Make sure that this ``direct'' frequency file is identical to the one that used the intermediate VCF file.
 
 <<vcftools.answers, engine = 'bash', echo = echo, results = results>>=
-vcftools --vcf results/samtools_filtered.recode.vcf --freq --out results/freq_from_intermediate.vcf
-vcftools --vcf results/UBASH31A_samtools.vcf --minQ 30 --freq --out results/freq_direct_from_samtools_output.vcf
+./vcftools --vcf results/samtools_filtered.recode.vcf --freq --out results/freq_from_intermediate.vcf
+./vcftools --vcf results/UBASH31A_samtools.vcf --minQ 30 --freq --out results/freq_direct_from_samtools_output.vcf
 @
 
 
