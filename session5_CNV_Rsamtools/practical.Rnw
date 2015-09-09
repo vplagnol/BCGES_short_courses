@@ -54,7 +54,22 @@ novoalign -c 11 -o SAM -F STDFQ -f fasta1.fq fasta2.fq  -d $reference |
 
 \subsection{gzip is magic (10 minutes)}
 
+The GNU \texttt{gzip} utility has a very nice feature.
+Look at the list of commands below:
+<<gzip, engine = 'bash'>>=
+gzip -c ../data/fastq_files/fastq1_1.txt > file1.fq.gz
+gzip -c ../data/fastq_files/fastq2_1.txt > file2.fq.gz
+cat file1.fq.gz file2.fq.gz > combined_file.fq.gz
+@ 
 
+What can you say about that combined file? Do you see what feature of \texttt{gzip} I want to highlight?
+{\bf Exercise:} What other approach would seem more appropriate to create combined zip files.
+
+<<gzip2, engine = 'bash', results = results, echo = echo>>=
+cat ../data/fastq_files/fastq1_1.txt ../data/fastq_files/fastq2_1.txt > combined_file2.fq
+gzip -f combined_file2.fq
+ls -ltrh combined_file.fq.gz combined_file2.fq.gz
+@ 
 
 \subsection{Tabix indexing of position sorted files (20 minutes)}
 The indexing technology used for the BAM format relies on the fact that the rows of a BAM file are indexed by chromosome and position.

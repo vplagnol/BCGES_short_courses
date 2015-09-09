@@ -11,5 +11,4 @@ if [ ! -e results ]; then mkdir results; fi
 ### Note the .list suffix, which is important for GATK to know that this is a list of BAM files (and not a BAM file itself).
 find ../data/BAM_files/ -name *bam > results/all_GBR_BAMs.list
 
-samtools mpileup -r 21:43823971-43867790 -Duf $fasta -b results/all_GBR_BAMs.list | bcftools view -bvcg - > results/UBASH31A_samtools.bcf   
-bcftools view results/UBASH31A_samtools.bcf  > results/UBASH31A_samtools.vcf
+samtools1.2 mpileup -r 21:43823971-43867790 -Duf $fasta -b results/all_GBR_BAMs.list | bcftools call -m -O v  > results/UBASH31A_samtools.vcf   
