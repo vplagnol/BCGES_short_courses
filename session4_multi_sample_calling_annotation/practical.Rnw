@@ -142,7 +142,7 @@ The principle is simple:
 \begin{itemize}
 \item Step1: each BAM file is processed individually by the \texttt{HaplotypeCaller} module. The output is a format called gVCF, which extends the concept of the VCF. 
 It essentially keeps information at all positions, not only the polymorphic ones. It is essential to separate regions without coverage from the ones with coverage but no polymorphism.
-\item Step 2: these gVCF files are combined together using the \texttt{GenotypeGVCF} module of \texttt{GATK} to create a single gVCF file, which can then be processed as usual.
+\item Step 2: these gVCF files are combined together using the \texttt{GenotypeGVCF} module of \texttt{GATK} to create a single VCF file, which can then be processed as usual.
 \end{itemize}
 
 An example of the gVCF output is shown below:
