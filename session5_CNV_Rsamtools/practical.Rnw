@@ -203,8 +203,7 @@ Now let us remove these problematic reads, but we have to do it manually.
 I could not find a better way to do this than what is shown below:
 
 <<remove.bad.reads, eval = TRUE, engine = 'bash'>>=
-samtools view -h results/only_paired.bam |
-       awk '{if (($1 != "SRR707198.24062323") && ($1 != "SRR707198.20187117")) print}' \
+samtools view -h results/only_paired.bam | grep -v 'SRR707198.24062323\|SRR707198.20187117' \
        > results/paired_fixed.sam
 
 samtools view -b -S -o results/paired_fixed.bam results/paired_fixed.sam
@@ -229,6 +228,14 @@ java -Xmx4g -jar /usr/local/gatk/picard.jar SamToFastq INPUT=results/paired_fixe
 \href{http://bedtools.readthedocs.org/en/latest/}{\texttt{BEDtools}} utilities are a swiss-army knife of tools for a wide-range of genomics analysis tasks.
 Individually, none of these tools looks impressive, but together with \texttt{samtools} they can be used to achieve impressive tasks.
 I could simply point you to the excellent documentation of the software (and you certainly should have a look) but I will also highlight a few useful ideas.
+
+\subsection{Use BEDtools to turn a BAM file into fastq format}
+
+A recent addition suggested by a student, using BEDtools to convert a BAM into fastq format in a manner that is not affected by reads that miss their mates.
+
+<<bamtofastq.bedfile, engine = 'bash'>>=
+samtools1.2 sort -n ../data/BAM_files/HG00130.mapped.ILLUMINA.bwa.GBR.exome.20130415.bam -o stdout | bedtools2.24 bamtofastq -i stdin -fq file1.fq file2.fq
+@
 
 \subsection{Computing depth of coverage for targeted DNA sequencing experiments}
 
