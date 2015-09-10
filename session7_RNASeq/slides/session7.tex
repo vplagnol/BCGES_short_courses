@@ -1,0 +1,116 @@
+\documentclass{beamer}
+\usepackage{ucltemplate}
+
+%% Choose the color you like
+\usecolortheme{blue}
+\setbeamertemplate{navigation symbols}{}
+
+%\AtBeginSection[] {
+%  \begin{frame}
+%    \frametitle{Outline}
+%    \tableofcontents[currentsection]
+%  \end{frame}
+%}
+
+%\usepackage[colorlinks=true]{hyperref}
+
+\title{RNA-Seq and differential expression analysis}
+\author[]{Vincent Plagnol}
+\institute{UCL}
+\date{}
+
+
+\begin{document}
+
+\maketitle
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}
+  \frametitle{Concept of RPKM}
+  \begin{center}
+    \includegraphics[width=10cm]{fig/RPKM.pdf}
+  \end{center}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Alignment is a much bigger challenge}
+  \begin{center}
+    \includegraphics[width=10cm]{fig/mapping_PE.pdf}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Tophat mapping strategy}
+  \begin{center}
+    \includegraphics[width=5cm]{fig/tophat.jpg}
+  \end{center}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Normalization is a more difficult problem than it seems}
+  \begin{center}
+    \includegraphics[width=9.7cm]{fig/robinsonOschlack.jpg}
+  \end{center}
+  The black arrow highlights the set of prominent genes that are largely attributable for the overall bias in log-fold-changes.
+  \scriptsize{Robinson, Oshlack, Genome Biology 2010}
+\end{frame}
+
+\begin{frame}
+  \frametitle{RNA-Seq is fiddly}
+  \begin{itemize}
+  \item Many more things can go wrong.
+  \item And what goes wrong can easily create subtle biases that look like case control differences.
+  \item I very strongly recommend:
+    \begin{itemize}
+    \item Careful inspection of PCA plots to identify any technical issue.
+    \item Using tools like PEER or SVA-Seq that help mitigate these technical issues.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+
+
+
+\begin{frame}
+  \frametitle{Should I remove duplicates in RNA-Seq data?}
+  \begin{center}
+    \includegraphics[width=6.5cm]{fig/Hom3_duplicate_prior_removal_DupRate_plot.pdf}
+  \end{center}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{RNA-Seq workflow}
+  \begin{itemize}
+  \item What you really need is:
+    \begin{itemize}
+    \item A choice of aligner (tophat, STAR...)
+    \item A choice of differential expression analysis tool (edgeR, DESeq, DESeq2)
+    \end{itemize}
+  \item I use tophat and DESeq2 but this is slightly old school.
+  \item STAR, or the new tools like Callisto, are probably better alternatives.
+    \begin{itemize}
+    \item They are, however, RAM hungry.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{An overview of DEXSeq output}
+  \begin{center}
+    \includegraphics[width=7cm]{fig/DEXSeq-19_Hnrnpul2.pdf}
+  \end{center}
+\end{frame}
+
+
+
+
+\end{document}

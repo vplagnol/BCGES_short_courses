@@ -1,0 +1,8 @@
+
+
+<<check, engine = 'bash'>>=
+command -v samtools >/dev/null 2>&1 || { echo >&2 "I require samtools but it's not installed.  Aborting."; }
+command -v samtools1.2 >/dev/null 2>&1 || { echo >&2 "I require samtools1.2 but it's not installed.  Aborting."; }
+command -v pear >/dev/null 2>&1 || { echo >&2 "I require pear but it's not installed.  Aborting."; }
+command -v flash >/dev/null 2>&1 || { echo >&2 "I require flash but it's not installed.  Aborting."; }
+@ 
