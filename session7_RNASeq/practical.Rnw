@@ -82,6 +82,23 @@ Compare the sizes of both files, look for differences and similarities.
 @ 
 
 
+%%%%%%%%%%%%%%%
+\subsection{What happened to my reads that do not align?}
+
+{\Exercise:} The files below are fastq files for RNA-Seq post-mortem data. Can you understand why the alignment score of these reads is extremely low?
+How would you go about fixing it?
+
+<<myls.rnaseq>>=
+ls ../data/fastq_for_RNASeq/file1.fq ../data/fastq_for_RNASeq/file2.fq
+@ 
+
+<<cutadapt, engine='bash'>>=
+python2.7 /Users/vplagnol/Library/Python/2.7/lib/python/site-packages/cutadapt \
+     -a AGATCGGAAGAG -A AGATCGGAAGAG \
+     -o results/trimmed1.fastq -p results/trimmed2.fastq \
+     ../data/fastq_for_RNASeq/file1.fq ../data/fastq_for_RNASeq/file2.fq
+@ 
+
 %%%%%%%%%%%%%%%%%
 \clearpage
 \section{Library normalization choices (40 minutes)}
