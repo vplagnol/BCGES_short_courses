@@ -57,6 +57,14 @@ samtools faidx human_g1k_v37.fasta
 These three steps download the compressed reference, unzip it and generate an index for that file.
 Please save it in your \texttt{session4} folder because my scripts will assume that this is where this file can be found.
 
+In addition, some software, in particular GATK, require another type of index, referred to as dictionary file.
+
+<<dict, engine = 'bash', eval = FALSE>>=
+ java -Xmx4g -jar /usr/local/gatk/picard.jar  CreateSequenceDictionary REFERENCE=human_g1k_v37.fasta \
+   OUTPUT=human_g1k_v37.dict
+@
+
+
 Because \texttt{samtools} can work with smaller reference genome (i.e. no need to have the full genome) I also added a version of chr21 fasta (build 37 of the human genome) in the \texttt{data/reference} folder. 
 However, it is zipped to not overwhelm the \texttt{github} site.
 To run some scripts you will need to unzip that file using:
