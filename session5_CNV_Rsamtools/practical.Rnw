@@ -234,7 +234,8 @@ I could simply point you to the excellent documentation of the software (and you
 A recent addition suggested by a student, using BEDtools to convert a BAM into fastq format in a manner that is not affected by reads that miss their mates.
 
 <<bamtofastq.bedfile, engine = 'bash'>>=
-samtools1.2 sort -n ../data/BAM_files/HG00130.mapped.ILLUMINA.bwa.GBR.exome.20130415.bam -o stdout | bedtools2.24 bamtofastq -i stdin -fq file1.fq file2.fq
+samtools1.2 sort -n ../data/BAM_files/HG00130.mapped.ILLUMINA.bwa.GBR.exome.20130415.bam -o stdout | \
+     bedtools2.24 bamtofastq -i stdin -fq file1.fq file2.fq
 @
 
 \subsection{Computing depth of coverage for targeted DNA sequencing experiments}
