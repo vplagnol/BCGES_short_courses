@@ -340,9 +340,11 @@ How would you filter pairs of reads that span over the deletion in this sample?
 
 <<download, eval = FALSE, engine = 'bash', results = results, echo = echo, tidy = TRUE>>=
 ###filename below
-fileName=data/HG00123/alignment/HG00123.alt_bwamem_GRCh38DH.20150718.GBR.low_coverage.cram
+fileName=/GBR/HG00123/alignment/HG00123.alt_bwamem_GRCh38DH.20150718.GBR.low_coverage.cram
 ### now I add the address of the ftp site
-BAM=ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp/${fileName}
+BAM=ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp//data_collections/1000_genomes_project/data/${fileName}
+
+
 ### and I use samtools to extract the reads I need
 ### note that the output file should be in your results folder, so you may skip this download step if it slows you down
 samtools1.2 view -b $BAM chr5:150820438-150845438 > results/HG00123.bam
